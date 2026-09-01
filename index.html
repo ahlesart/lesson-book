@@ -121,6 +121,7 @@
     <div class="ballabel">The family owes you</div>
     <div id="balance">$0</div>
     <div id="balhint"></div>
+    <button id="venmoReq" style="display:none;margin-top:12px;width:100%;background:#008CFF;color:#fff;border:none;border-radius:14px;padding:14px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer">Request on Venmo</button>
   </div>
 
   <div class="section">
@@ -165,6 +166,7 @@
   <div class="dbtns">
     <button id="mClose">Close</button>
     <button id="mCopy">Copy it</button>
+    <button id="mMail" style="display:none">Email it</button>
     <button class="go" id="mSms">Open Messages</button>
   </div>
   <p style="font-size:13px;color:var(--muted);margin:10px 0 0">Copy the message, then paste it into your text thread with the family.</p>
@@ -175,6 +177,8 @@
   <div id="slist"></div>
   <button class="addr" id="sAdd">+ Add a rider</button>
   <div class="field" style="margin-top:14px"><label>They already owed me ($, optional)</label><input id="sStart" type="number" inputmode="decimal" step="1"></div>
+  <div class="field"><label>Family's Venmo (for one-tap requests)</label><input id="sVenmo" placeholder="Benjamin-Ahles" autocapitalize="none"></div>
+  <div class="field"><label>Family's email (for one-tap updates)</label><input id="sEmail" type="email" placeholder="name@email.com" autocapitalize="none"></div>
   <div class="dbtns"><button id="sCancel">Cancel</button><button class="go" id="sGo">Save</button></div>
 </dialog>
 
@@ -183,7 +187,7 @@
   var KEY="lessonbook.v1";
   function defaults(){
     return {riders:[{name:"Alix",price:70},{name:"Wynn",price:70},{name:"Marlowe",price:70}],
-            entries:[], lastReport:0, seenTip:false};
+            entries:[], lastReport:0, seenTip:false, email:"", venmo:""};
   }
   var S=defaults();
   try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.riders) S=j; }catch(e){}
@@ -233,6 +237,11 @@
     var lessons=S.entries.filter(function(e){return e.kind==="lesson";}).length;
     document.getElementById("balhint").textContent = b<=0.001 ? "All settled up" :
       lessons+" lesson"+(lessons===1?"":"s")+" in the book";
+    var vq=document.getElementById("venmoReq");
+    if(b>0.001 && S.venmo){
+      vq.style.display="block";
+      vq.textContent="Request "+money(b)+" on Venmo";
+    } else { vq.style.display="none"; }
     var R=document.getElementById("riders"); R.innerHTML="";
     S.riders.forEach(function(r,i){
       var btn=document.createElement("button");
@@ -268,6 +277,18 @@
   }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
 
+  // one-tap Venmo request: opens her Venmo app/site with the request
+  // pre-filled -- she just confirms inside Venmo
+  document.getElementById("venmoReq").onclick=function(){
+    var b=balance(); if(!(b>0) || !S.venmo) return;
+    var note="Riding lessons through "+fmtDate(today());
+    var a=document.createElement("a");
+    a.href="https://venmo.com/"+encodeURIComponent(S.venmo.replace(/^@/,""))+
+      "?txn=charge&amount="+(Math.round(b*100)/100)+"&note="+encodeURIComponent(note);
+    a.target="_blank"; a.rel="noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
   // dialogs
   var dOther=document.getElementById("dOther"), dPay=document.getElementById("dPay"), dSet=document.getElementById("dSet");
   document.getElementById("otherbtn").onclick=function(){ document.getElementById("oLabel").value=""; document.getElementById("oAmt").value=""; dOther.showModal(); };
@@ -294,6 +315,8 @@
     var L=document.getElementById("slist"); L.innerHTML="";
     S.riders.forEach(function(r){ srow(L,r.name,r.price); });
     document.getElementById("sStart").value="";
+    document.getElementById("sVenmo").value=S.venmo||"";
+    document.getElementById("sEmail").value=S.email||"";
     dSet.showModal();
   };
   function srow(L,name,price){
@@ -313,6 +336,8 @@
     if(riders.length) S.riders=riders;
     var st=parseFloat(document.getElementById("sStart").value);
     if(st>0) S.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
+    S.venmo=document.getElementById("sVenmo").value.trim().replace(/^@/,"");
+    S.email=document.getElementById("sEmail").value.trim();
     S.seenTip=true; save(); render(); dSet.close();
   };
 
@@ -328,6 +353,17 @@
       a.href="sms:?&body="+encodeURIComponent(msg);
       a.click();
     };
+    var mb=document.getElementById("mMail");
+    if(S.email){
+      mb.style.display="block";
+      mb.onclick=function(){
+        var a=document.createElement("a");
+        a.href="mailto:"+encodeURIComponent(S.email)+
+          "?subject="+encodeURIComponent("Lesson Book update")+
+          "&body="+encodeURIComponent(msg);
+        a.click();
+      };
+    } else { mb.style.display="none"; }
     document.getElementById("dMsg").showModal();
     box.focus(); box.select();
   }
