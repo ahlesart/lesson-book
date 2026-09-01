@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Send Morgan the Lesson Book</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<meta name="theme-color" content="#1F5138">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Public+Sans:wght@400;600;700&display=swap">
+<style>
+  :root{ --ground:#F2F0E9; --card:#FFF; --ink:#23251F; --muted:#6E6F63;
+    --line:#DDDAD0; --hunter:#1F5138; --hunter-ink:#FFF; --brass:#A9812F; }
+  @media (prefers-color-scheme: dark){ :root{
+    --ground:#111B15; --card:#1B2921; --ink:#EDEAE0; --muted:#9AA394;
+    --line:#2E3D33; --hunter:#4E9C77; --hunter-ink:#0E1812; --brass:#C9A55A; } }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);
+    font-family:"Public Sans",system-ui,sans-serif;font-size:19px;line-height:1.5;padding:20px}
+  .wrap{max-width:480px;margin:0 auto}
+  h1{font-family:Fraunces,Georgia,serif;font-size:27px;margin:8px 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+  .linkbox{font-size:14px;word-break:break-all;color:var(--muted);
+    background:var(--ground);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+  button{width:100%;border:none;border-radius:14px;padding:18px;font-size:19px;
+    font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:10px}
+  .go{background:var(--hunter);color:var(--hunter-ink)}
+  .alt{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+  .gold{background:var(--brass);color:#fff}
+  @media (prefers-color-scheme: dark){ .gold{color:#141005} }
+  p.small{font-size:15px;color:var(--muted)}
+  #done{display:none;text-align:center;color:var(--hunter);font-weight:700;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Send Morgan her Lesson Book</h1>
+
+  <div class="card">
+    <div class="linkbox" id="linkbox"></div>
+    <button class="gold" id="sharebtn">&#128241; Text it to Morgan</button>
+    <button class="go" id="copymsg">Copy the message</button>
+    <button class="alt" id="copylink">Copy just the link</button>
+    <div id="done">Copied &#10003;</div>
+  </div>
+
+  <p class="small">The gold button opens your share sheet with a friendly
+  message already written &mdash; pick Morgan's text thread and send. The
+  link carries your Venmo + email so her copy is configured the moment
+  she opens it; after that it scrubs itself from her address bar.</p>
+</div>
+
+<script>
+(function(){
+  var LINK="https://ahlesart.github.io/lesson-book/?venmo=Benjamin-Ahles&email=ahlesart%40gmail.com";
+  var MSG="Hi Morgan! We made you a little app for keeping track of lessons and what we owe you — the Ahles Family Lesson Book. Tap this link, then choose “Add to Home Screen” in your browser menu so it's always one tap away:\n\n"+LINK+
+    "\n\nTap a green button whenever a lesson happens, and the blue button sends us a Venmo request for whatever we owe. Everything saves on your phone automatically.";
+  document.getElementById("linkbox").textContent=LINK;
+  function flash(){ var d=document.getElementById("done"); d.style.display="block";
+    setTimeout(function(){ d.style.display="none"; },2500); }
+  function copy(text){
+    if(navigator.clipboard){ navigator.clipboard.writeText(text).then(flash)
+      .catch(function(){ legacy(text); }); }
+    else legacy(text);
+  }
+  function legacy(text){
+    var ta=document.createElement("textarea"); ta.value=text;
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); flash(); }catch(e){}
+    ta.remove();
+  }
+  document.getElementById("copylink").onclick=function(){ copy(LINK); };
+  document.getElementById("copymsg").onclick=function(){ copy(MSG); };
+  document.getElementById("sharebtn").onclick=function(){
+    if(navigator.share){ navigator.share({text:MSG}).catch(function(){}); }
+    else copy(MSG);
+  };
+})();
+</script>
+</body>
+</html>
