@@ -1,8 +1,8 @@
-<title>The Lesson Book</title>
+<title>Ahles Family Lesson Book</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<meta name="apple-mobile-web-app-title" content="Lesson Book">
+<meta name="apple-mobile-web-app-title" content="Ahles Lessons">
 <meta name="theme-color" content="#1F5138">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;600;700&display=swap">
 <style>
@@ -35,7 +35,7 @@
   }
   .wrap{max-width:480px; margin:0 auto; padding:16px 16px 120px}
   header{display:flex; align-items:baseline; justify-content:space-between; padding:6px 2px 14px}
-  h1{font-family:Fraunces,Georgia,serif; font-weight:700; font-size:31px; margin:0; letter-spacing:.2px}
+  h1{font-family:Fraunces,Georgia,serif; font-weight:700; font-size:25px; margin:0; letter-spacing:.2px; text-wrap:balance}
   #gear{background:none;border:none;color:var(--muted);font-size:22px;padding:8px;cursor:pointer}
   .balcard{
     background:var(--card); border:1px solid var(--line); border-radius:18px;
@@ -115,7 +115,7 @@
 
 <div class="wrap">
   <header>
-    <h1>The Lesson Book</h1>
+    <h1>Ahles Family Lesson Book</h1>
     <button id="gear" aria-label="Settings">&#9881;&#65039;</button>
   </header>
 
@@ -145,7 +145,7 @@
     </p>
     <div class="hist" id="hist"></div>
     <p class="tip" id="tip"></p>
-    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">THE LESSON BOOK &middot; v9</p>
+    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">AHLES FAMILY LESSON BOOK &middot; v10</p>
   </div>
 </div>
 
@@ -389,7 +389,7 @@
       mb.onclick=function(){
         var a=document.createElement("a");
         a.href="mailto:"+encodeURIComponent(S.email)+
-          "?subject="+encodeURIComponent("Lesson Book update")+
+          "?subject="+encodeURIComponent("Ahles Family Lesson Book update")+
           "&body="+encodeURIComponent(msg);
         a.click();
       };
@@ -427,7 +427,7 @@
     var b=balance();
     var since=S.entries.filter(function(e){ return tsOf(e) > S.lastReport; });
     var list = since.length ? since : S.entries.slice(-5);
-    var lines=["Lesson Book update ("+fmtDate(today())+")","","You owe me: "+money(b)];
+    var lines=["Ahles Family Lesson Book — update ("+fmtDate(today())+")","","You owe me: "+money(b)];
     if(list.length){
       lines.push("", since.length ? "Since my last update:" : "Most recent:");
       list.forEach(function(e){ lines.push("  "+entryLine(e)); });
@@ -440,7 +440,7 @@
     var lessons=S.entries.filter(function(e){return e.kind==="lesson";}).length;
     var paid=S.entries.filter(function(e){return e.kind==="payment";})
       .reduce(function(s,e){return s+e.amount;},0);
-    var lines=["Lesson Book — the whole book ("+fmtDate(today())+")",""];
+    var lines=["Ahles Family Lesson Book — the whole book ("+fmtDate(today())+")",""];
     S.entries.forEach(function(e){ lines.push(entryLine(e)); });
     lines.push("", lessons+" lessons total · paid so far: "+money(paid),
       "Balance owed: "+money(b));
