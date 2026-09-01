@@ -1,4 +1,5 @@
 <title>The Lesson Book</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <meta name="apple-mobile-web-app-title" content="Lesson Book">
@@ -144,7 +145,7 @@
     </p>
     <div class="hist" id="hist"></div>
     <p class="tip" id="tip"></p>
-    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">THE LESSON BOOK &middot; v8</p>
+    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">THE LESSON BOOK &middot; v9</p>
   </div>
 </div>
 
@@ -299,12 +300,23 @@
   // pre-filled -- she just confirms inside Venmo
   document.getElementById("venmoReq").onclick=function(){
     var b=balance(); if(!(b>0) || !S.venmo) return;
+    var amt=(Math.round(b*100)/100);
+    var user=S.venmo.replace(/^@/,"");
     var note="Riding lessons through "+fmtDate(today());
-    var a=document.createElement("a");
-    a.href="https://venmo.com/"+encodeURIComponent(S.venmo.replace(/^@/,""))+
-      "?txn=charge&amount="+(Math.round(b*100)/100)+"&note="+encodeURIComponent(note);
-    a.target="_blank"; a.rel="noopener";
-    document.body.appendChild(a); a.click(); a.remove();
+    // open the Venmo APP with the request composed; if the app doesn't
+    // grab it within a moment, fall back to venmo.com
+    var appUrl="venmo://paycharge?txn=charge&recipients="+encodeURIComponent(user)+
+      "&amount="+amt+"&note="+encodeURIComponent(note);
+    var webUrl="https://venmo.com/?txn=charge&recipients="+encodeURIComponent(user)+
+      "&amount="+amt+"&note="+encodeURIComponent(note);
+    var t=setTimeout(function(){
+      if(!document.hidden){ location.href=webUrl; }
+    },1400);
+    window.addEventListener("pagehide",function(){ clearTimeout(t); },{once:true});
+    document.addEventListener("visibilitychange",function(){
+      if(document.hidden) clearTimeout(t);
+    },{once:true});
+    location.href=appUrl;
   };
 
   // dialogs
