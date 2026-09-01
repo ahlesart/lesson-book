@@ -1,0 +1,387 @@
+<title>The Lesson Book</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --ground:#F2F0E9; --card:#FFFFFF; --ink:#23251F; --muted:#6E6F63;
+    --line:#DDDAD0; --hunter:#1F5138; --hunter-ink:#FFFFFF;
+    --saddle:#7A4A21; --brass:#A9812F; --paid:#1F5138; --danger:#8C3B2E;
+    --chip:#E9E5D9;
+  }
+  :root:not([data-theme="light"]){}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#111B15; --card:#1B2921; --ink:#EDEAE0; --muted:#9AA394;
+      --line:#2E3D33; --hunter:#4E9C77; --hunter-ink:#0E1812;
+      --saddle:#C98B4E; --brass:#C9A55A; --paid:#6FBE95; --danger:#D97A66;
+      --chip:#243530;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#111B15; --card:#1B2921; --ink:#EDEAE0; --muted:#9AA394;
+    --line:#2E3D33; --hunter:#4E9C77; --hunter-ink:#0E1812;
+    --saddle:#C98B4E; --brass:#C9A55A; --paid:#6FBE95; --danger:#D97A66;
+    --chip:#243530;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:"Public Sans",system-ui,sans-serif; font-size:17px; line-height:1.45;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:480px; margin:0 auto; padding:16px 16px 120px}
+  header{display:flex; align-items:baseline; justify-content:space-between; padding:6px 2px 14px}
+  h1{font-family:Fraunces,Georgia,serif; font-weight:700; font-size:26px; margin:0; letter-spacing:.2px}
+  #gear{background:none;border:none;color:var(--muted);font-size:22px;padding:8px;cursor:pointer}
+  .balcard{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:22px 20px 18px; text-align:center;
+  }
+  .ballabel{font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  #balance{
+    font-family:Fraunces,Georgia,serif; font-weight:700; font-size:56px;
+    font-variant-numeric:tabular-nums; color:var(--hunter); margin:2px 0 0; line-height:1.1;
+  }
+  #balhint{font-size:14px; color:var(--muted); margin-top:4px}
+  .section{margin-top:22px}
+  .seclabel{font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; margin:0 2px 10px}
+  .riders{display:flex; flex-direction:column; gap:10px}
+  .rbtn{
+    display:flex; justify-content:space-between; align-items:center; width:100%;
+    background:var(--hunter); color:var(--hunter-ink); border:none; border-radius:16px;
+    padding:18px 20px; font-size:19px; font-weight:700; font-family:inherit; cursor:pointer;
+  }
+  .rbtn small{font-weight:600; opacity:.85; font-size:15px; font-variant-numeric:tabular-nums}
+  .rbtn:active{transform:scale(.985)}
+  .rowbtns{display:flex; gap:10px; margin-top:10px}
+  .obtn{
+    flex:1; background:var(--card); color:var(--ink); border:1.5px solid var(--line);
+    border-radius:16px; padding:15px 10px; font-size:16px; font-weight:700; font-family:inherit; cursor:pointer;
+  }
+  .obtn.pay{color:var(--paid); border-color:var(--paid)}
+  .hist{background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden}
+  .hrow{display:flex; align-items:center; gap:10px; padding:13px 14px; border-top:1px solid var(--line)}
+  .hrow:first-child{border-top:none}
+  .hwhat{flex:1; min-width:0}
+  .hwhat b{font-weight:600}
+  .hdate{font-size:13px; color:var(--muted)}
+  .hamt{font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .hamt.charge{color:var(--saddle)}
+  .hamt.payment{color:var(--paid)}
+  .hx{background:none;border:none;color:var(--muted);font-size:17px;padding:6px;cursor:pointer}
+  .empty{padding:22px 16px; text-align:center; color:var(--muted); font-size:15px}
+  .textbtn{
+    position:fixed; left:16px; right:16px; bottom:16px; max-width:448px; margin:0 auto;
+    background:var(--brass); color:#fff; border:none; border-radius:16px;
+    padding:17px; font-size:18px; font-weight:700; font-family:inherit; cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.18);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .textbtn{color:#141005} }
+  :root[data-theme="dark"] .textbtn{color:#141005}
+  dialog{
+    border:none; border-radius:18px; background:var(--card); color:var(--ink);
+    width:min(92vw,420px); padding:20px; font-family:inherit;
+  }
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog h2{font-family:Fraunces,Georgia,serif; font-size:21px; margin:0 0 12px}
+  .field{margin-bottom:12px}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.08em}
+  .field input{
+    width:100%; font-size:19px; padding:12px; border:1.5px solid var(--line); border-radius:12px;
+    background:var(--ground); color:var(--ink); font-family:inherit; font-variant-numeric:tabular-nums;
+  }
+  .dbtns{display:flex; gap:10px; margin-top:16px}
+  .dbtns button{flex:1; padding:14px; border-radius:12px; font-size:16px; font-weight:700; font-family:inherit; cursor:pointer; border:1.5px solid var(--line); background:var(--card); color:var(--ink)}
+  .dbtns .go{background:var(--hunter); color:var(--hunter-ink); border-color:var(--hunter)}
+  .srow{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+  .srow input{flex:1; font-size:16px; padding:10px; border:1.5px solid var(--line); border-radius:10px; background:var(--ground); color:var(--ink); font-family:inherit}
+  .srow input.pr{flex:0 0 84px; text-align:right; font-variant-numeric:tabular-nums}
+  .srow button{background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px}
+  .addr{background:none; border:1.5px dashed var(--line); border-radius:10px; width:100%; padding:10px; color:var(--muted); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; margin-top:2px}
+  #toast{
+    position:fixed; bottom:86px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--ground); border-radius:12px; padding:11px 16px;
+    font-size:15px; font-weight:600; display:none; align-items:center; gap:14px; white-space:nowrap;
+  }
+  #toast button{background:none;border:none;color:var(--brass);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
+  .tip{font-size:13.5px; color:var(--muted); margin-top:14px; text-align:center; padding:0 10px}
+  button:focus-visible, input:focus-visible{outline:2.5px solid var(--brass); outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){ .rbtn:active{transform:none} }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>The Lesson Book</h1>
+    <button id="gear" aria-label="Settings">&#9881;&#65039;</button>
+  </header>
+
+  <div id="memnote" style="display:none;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--muted);margin-bottom:12px">
+    Heads up: this browser is blocking saving, so entries won't survive closing this page. Open the link in Safari or Chrome instead.
+  </div>
+  <div class="balcard">
+    <div class="ballabel">The family owes you</div>
+    <div id="balance">$0</div>
+    <div id="balhint"></div>
+  </div>
+
+  <div class="section">
+    <p class="seclabel">Tap when a lesson happens</p>
+    <div class="riders" id="riders"></div>
+    <div class="rowbtns">
+      <button class="obtn" id="otherbtn">+ Something else</button>
+      <button class="obtn pay" id="paybtn">&#10003; I got paid</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <p class="seclabel" style="display:flex;justify-content:space-between;align-items:center">
+      <span>The book</span>
+      <button id="shareall" style="background:none;border:none;color:var(--brass);font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px">Send whole book</button>
+    </p>
+    <div class="hist" id="hist"></div>
+    <p class="tip" id="tip"></p>
+  </div>
+</div>
+
+<button class="textbtn" id="sendbtn">&#128241; Text the family an update</button>
+
+<div id="toast"><span id="toastmsg"></span><button id="undo">Undo</button></div>
+
+<dialog id="dOther">
+  <h2>Something else</h2>
+  <div class="field"><label>What was it?</label><input id="oLabel" placeholder="Trailering, show fee, tack&hellip;"></div>
+  <div class="field"><label>Amount ($)</label><input id="oAmt" type="number" inputmode="decimal" min="0" step="1"></div>
+  <div class="dbtns"><button id="oCancel">Cancel</button><button class="go" id="oGo">Add it</button></div>
+</dialog>
+
+<dialog id="dPay">
+  <h2>I got paid</h2>
+  <div class="field"><label>Amount ($)</label><input id="pAmt" type="number" inputmode="decimal" min="0" step="1"></div>
+  <div class="dbtns"><button id="pCancel">Cancel</button><button class="go" id="pGo">Record it</button></div>
+</dialog>
+
+<dialog id="dMsg">
+  <h2>Ready to send</h2>
+  <textarea id="msgBox" readonly rows="9" style="width:100%;font-size:15px;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--ground);color:var(--ink);font-family:inherit;line-height:1.5"></textarea>
+  <div class="dbtns">
+    <button id="mClose">Close</button>
+    <button id="mCopy">Copy it</button>
+    <button class="go" id="mSms">Open Messages</button>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin:10px 0 0">Copy the message, then paste it into your text thread with the family.</p>
+</dialog>
+
+<dialog id="dSet">
+  <h2>Riders &amp; prices</h2>
+  <div id="slist"></div>
+  <button class="addr" id="sAdd">+ Add a rider</button>
+  <div class="field" style="margin-top:14px"><label>They already owed me ($, optional)</label><input id="sStart" type="number" inputmode="decimal" step="1"></div>
+  <div class="dbtns"><button id="sCancel">Cancel</button><button class="go" id="sGo">Save</button></div>
+</dialog>
+
+<script>
+(function(){
+  var KEY="lessonbook.v1";
+  function defaults(){
+    return {riders:[{name:"Alix",price:70},{name:"Wynn",price:70},{name:"Marlowe",price:70}],
+            entries:[], lastReport:0, seenTip:false};
+  }
+  var S=defaults();
+  try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.riders) S=j; }catch(e){}
+
+  // durable storage: the artifact's shared database (works on the family's
+  // HOSTED VARIANT: storage lives on this phone (localStorage on a real
+  // web origin). If storage is somehow blocked, say so instead of lying.
+  try{ localStorage.setItem(KEY+".t","1"); localStorage.removeItem(KEY+".t"); }
+  catch(e){ document.getElementById("memnote").style.display="block"; }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  }
+  function money(n){ return "$"+(Math.round(n*100)/100).toLocaleString(undefined,{maximumFractionDigits:2}); }
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function fmtDate(iso){
+    var d=new Date(iso+"T12:00:00");
+    return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+  }
+  function balance(){
+    var b=0;
+    for(var i=0;i<S.entries.length;i++){ var e=S.entries[i]; b += (e.kind==="payment"? -e.amount : e.amount); }
+    return b;
+  }
+  var undoFn=null, toastTimer=null;
+  function toast(msg, fn){
+    document.getElementById("toastmsg").textContent=msg;
+    undoFn=fn||null;
+    document.getElementById("undo").style.display = fn ? "inline" : "none";
+    var t=document.getElementById("toast"); t.style.display="flex";
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.style.display="none"; undoFn=null; },8000);
+  }
+  document.getElementById("undo").onclick=function(){
+    if(undoFn){ undoFn(); undoFn=null; save(); render(); }
+    document.getElementById("toast").style.display="none";
+  };
+  function addEntry(kind,label,amount,rider){
+    var e={id:Date.now()+"-"+Math.random().toString(36).slice(2,6), date:today(), kind:kind, label:label, amount:amount};
+    if(rider) e.rider=rider;
+    S.entries.push(e); save(); render();
+    toast((kind==="payment"?"Payment recorded: ":"Added: ")+label+" — "+money(amount),
+      function(){ S.entries=S.entries.filter(function(x){return x.id!==e.id;}); });
+  }
+  function render(){
+    var b=balance();
+    document.getElementById("balance").textContent=money(b);
+    document.getElementById("balance").style.color = b>0.001 ? "var(--hunter)" : "var(--muted)";
+    var lessons=S.entries.filter(function(e){return e.kind==="lesson";}).length;
+    document.getElementById("balhint").textContent = b<=0.001 ? "All settled up" :
+      lessons+" lesson"+(lessons===1?"":"s")+" in the book";
+    var R=document.getElementById("riders"); R.innerHTML="";
+    S.riders.forEach(function(r,i){
+      var btn=document.createElement("button");
+      btn.className="rbtn"; btn.type="button";
+      btn.innerHTML="<span>+ Lesson &middot; "+esc(r.name)+"</span><small>"+money(r.price)+"</small>";
+      btn.onclick=function(){ addEntry("lesson","Lesson — "+r.name, r.price, r.name); };
+      R.appendChild(btn);
+    });
+    var H=document.getElementById("hist"); H.innerHTML="";
+    if(!S.entries.length){
+      H.innerHTML='<div class="empty">Nothing yet. Tap a green button the next time a lesson happens.</div>';
+    } else {
+      S.entries.slice().reverse().forEach(function(e){
+        var row=document.createElement("div"); row.className="hrow";
+        var amtClass = e.kind==="payment" ? "payment" : "charge";
+        var sign = e.kind==="payment" ? "&minus;" : "+";
+        row.innerHTML='<div class="hwhat"><b>'+esc(e.label)+'</b><div class="hdate">'+fmtDate(e.date)+
+          '</div></div><div class="hamt '+amtClass+'">'+sign+money(e.amount)+
+          '</div><button class="hx" aria-label="Remove">&#10005;</button>';
+        row.querySelector(".hx").onclick=function(){
+          var idx=S.entries.findIndex(function(x){return x.id===e.id;});
+          if(idx<0) return;
+          var removed=S.entries.splice(idx,1)[0];
+          save(); render();
+          toast("Removed: "+e.label+" — "+money(e.amount),
+            function(){ S.entries.splice(Math.min(idx,S.entries.length),0,removed); });
+        };
+        H.appendChild(row);
+      });
+    }
+    document.getElementById("tip").textContent = S.seenTip ? "" :
+      "Tip: use “Add to Home Screen” so this opens like an app. Everything saves automatically on this phone — and every update you text is a backup.";
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+
+  // dialogs
+  var dOther=document.getElementById("dOther"), dPay=document.getElementById("dPay"), dSet=document.getElementById("dSet");
+  document.getElementById("otherbtn").onclick=function(){ document.getElementById("oLabel").value=""; document.getElementById("oAmt").value=""; dOther.showModal(); };
+  document.getElementById("oCancel").onclick=function(){ dOther.close(); };
+  document.getElementById("oGo").onclick=function(){
+    var l=document.getElementById("oLabel").value.trim()||"Other";
+    var a=parseFloat(document.getElementById("oAmt").value);
+    if(!(a>0)){ document.getElementById("oAmt").focus(); return; }
+    dOther.close(); addEntry("charge",l,a);
+  };
+  document.getElementById("paybtn").onclick=function(){
+    var b=balance(); document.getElementById("pAmt").value = b>0 ? String(Math.round(b*100)/100) : "";
+    dPay.showModal();
+  };
+  document.getElementById("pCancel").onclick=function(){ dPay.close(); };
+  document.getElementById("pGo").onclick=function(){
+    var a=parseFloat(document.getElementById("pAmt").value);
+    if(!(a>0)){ document.getElementById("pAmt").focus(); return; }
+    dPay.close(); addEntry("payment","Payment received",a);
+  };
+
+  // settings
+  document.getElementById("gear").onclick=function(){
+    var L=document.getElementById("slist"); L.innerHTML="";
+    S.riders.forEach(function(r){ srow(L,r.name,r.price); });
+    document.getElementById("sStart").value="";
+    dSet.showModal();
+  };
+  function srow(L,name,price){
+    var d=document.createElement("div"); d.className="srow";
+    d.innerHTML='<input value="'+esc(name)+'" placeholder="Name"><input class="pr" type="number" inputmode="decimal" value="'+price+'"><button aria-label="Remove rider">&#10005;</button>';
+    d.querySelector("button").onclick=function(){ d.remove(); };
+    L.appendChild(d);
+  }
+  document.getElementById("sAdd").onclick=function(){ srow(document.getElementById("slist"),"",70); };
+  document.getElementById("sCancel").onclick=function(){ dSet.close(); };
+  document.getElementById("sGo").onclick=function(){
+    var rows=document.getElementById("slist").querySelectorAll(".srow"), riders=[];
+    rows.forEach(function(d){
+      var n=d.querySelector("input").value.trim(), p=parseFloat(d.querySelector(".pr").value);
+      if(n && p>0) riders.push({name:n, price:p});
+    });
+    if(riders.length) S.riders=riders;
+    var st=parseFloat(document.getElementById("sStart").value);
+    if(st>0) S.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
+    S.seenTip=true; save(); render(); dSet.close();
+  };
+
+  // send update / send whole book
+  function entryLine(e){
+    return fmtDate(e.date)+" — "+e.label+" "+(e.kind==="payment"?"-":"+")+money(e.amount);
+  }
+  function showMsgDialog(msg){
+    var box=document.getElementById("msgBox");
+    box.value=msg;
+    document.getElementById("mSms").onclick=function(){
+      var a=document.createElement("a");
+      a.href="sms:?&body="+encodeURIComponent(msg);
+      a.click();
+    };
+    document.getElementById("dMsg").showModal();
+    box.focus(); box.select();
+  }
+  function copyBox(){
+    var box=document.getElementById("msgBox");
+    box.focus(); box.select(); box.setSelectionRange(0, box.value.length);
+    var ok=false;
+    try{ ok=document.execCommand("copy"); }catch(e){}
+    if(navigator.clipboard){ navigator.clipboard.writeText(box.value).then(function(){ toast("Copied — now paste it into a text"); }).catch(function(){ if(ok) toast("Copied — now paste it into a text"); }); }
+    else if(ok) toast("Copied — now paste it into a text");
+  }
+  document.getElementById("mCopy").onclick=copyBox;
+  document.getElementById("mClose").onclick=function(){ document.getElementById("dMsg").close(); };
+  function shareText(msg){
+    if(navigator.share){
+      navigator.share({text:msg}).then(function(){}).catch(function(err){
+        if(err && err.name==="AbortError") return;   // she closed the share sheet on purpose
+        tryClipboardThenDialog(msg);
+      });
+      return;
+    }
+    tryClipboardThenDialog(msg);
+  }
+  function tryClipboardThenDialog(msg){
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(msg).then(function(){ toast("Copied — now paste it into a text"); })
+        .catch(function(){ showMsgDialog(msg); });
+    } else { showMsgDialog(msg); }
+  }
+  document.getElementById("sendbtn").onclick=function(){
+    var b=balance();
+    var since=S.entries.filter(function(e){ return tsOf(e) > S.lastReport; });
+    var list = since.length ? since : S.entries.slice(-5);
+    var lines=["Lesson Book update ("+fmtDate(today())+")","","You owe me: "+money(b)];
+    if(list.length){
+      lines.push("", since.length ? "Since my last update:" : "Most recent:");
+      list.forEach(function(e){ lines.push("  "+entryLine(e)); });
+    }
+    S.lastReport=Date.now(); save();
+    shareText(lines.join("\n"));
+  };
+  document.getElementById("shareall").onclick=function(){
+    var b=balance();
+    var lessons=S.entries.filter(function(e){return e.kind==="lesson";}).length;
+    var paid=S.entries.filter(function(e){return e.kind==="payment";})
+      .reduce(function(s,e){return s+e.amount;},0);
+    var lines=["Lesson Book — the whole book ("+fmtDate(today())+")",""];
+    S.entries.forEach(function(e){ lines.push(entryLine(e)); });
+    lines.push("", lessons+" lessons total · paid so far: "+money(paid),
+      "Balance owed: "+money(b));
+    shareText(lines.join("\n"));
+  };
+  function tsOf(e){ return new Date(e.date+"T12:00:00").getTime(); }
+
+  render();
+})();
+</script>
