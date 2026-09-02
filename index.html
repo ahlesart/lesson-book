@@ -145,7 +145,7 @@
     </p>
     <div class="hist" id="hist"></div>
     <p class="tip" id="tip"></p>
-    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">AHLES FAMILY LESSON BOOK &middot; v10</p>
+    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">AHLES FAMILY LESSON BOOK &middot; v11</p>
   </div>
 </div>
 
@@ -193,10 +193,16 @@
   var KEY="lessonbook.v1";
   function defaults(){
     return {riders:[{name:"Alix",price:70},{name:"Wynn",price:70},{name:"Marlowe",price:70}],
-            entries:[], lastReport:0, seenTip:false, email:"", venmo:""};
+            entries:[], lastReport:0, seenTip:false,
+            email:"ahlesart@gmail.com", venmo:"Benjamin-Ahles"};
   }
   var S=defaults();
   try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.riders) S=j; }catch(e){}
+  // this is the Ahles family's book: if her saved copy predates the built-in
+  // defaults (blank venmo/email), fill them in so the request button exists
+  // without needing the setup link to have worked
+  if(!S.venmo) S.venmo="Benjamin-Ahles";
+  if(!S.email) S.email="ahlesart@gmail.com";
   // one-time setup via link: ?venmo=...&email=... pre-fills her settings,
   // then scrubs itself from the address bar (nothing personal in the URL
   // she bookmarks, nothing in the public file)
