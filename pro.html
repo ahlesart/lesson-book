@@ -134,7 +134,7 @@
     <p class="seclabel"><span>Your families</span></p>
     <div id="famlist"></div>
     <button class="addfam" id="addFam">+ Add a family</button>
-    <p class="foot">LESSON BOOK ROSTER &middot; preview 1</p>
+    <p class="foot">LESSON BOOK ROSTER &middot; preview 2</p>
   </div>
 
   <!-- CLIENT VIEW -->
@@ -246,6 +246,14 @@
   var S=null;
   try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.clients) S=j; }catch(e){}
   if(!S) S=sample();
+  // ?sample=1 restores the demo families (and scrubs itself from the URL)
+  try{
+    if(new URLSearchParams(location.search).get("sample")){
+      S=sample();
+      try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+      history.replaceState(null,"",location.pathname);
+    }
+  }catch(e){}
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
   function money(n){ return "$"+(Math.round(n*100)/100).toLocaleString(undefined,{maximumFractionDigits:2}); }
   function today(){ return new Date().toISOString().slice(0,10); }
@@ -541,13 +549,20 @@
     if(i<0){ toast("That doesn't look like a backup"); return; }
     try{
       var j=JSON.parse(t.slice(i+18));
-      if(j && j.clients){ S=j; cur=null; save(); render(); dBook.close(); toast("Book restored"); }
+      if(j && j.clients){
+        var before=JSON.parse(JSON.stringify(S));
+        S=j; cur=null; save(); render(); dBook.close();
+        toast("Book restored — Undo brings the old one back",
+          function(){ S=before; cur=null; });
+      }
       else toast("That doesn't look like a backup");
     }catch(e){ toast("That doesn't look like a backup"); }
   };
   document.getElementById("bkFresh").onclick=function(){
+    var before=JSON.parse(JSON.stringify(S));
     S={clients:[]}; cur=null; save(); render(); dBook.close();
-    toast("Fresh book — add your first family");
+    toast("Fresh book — Undo brings everything back",
+      function(){ S=before; cur=null; });
   };
 
   render();
