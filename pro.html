@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lesson Book Roster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Lesson Roster">
+<meta name="theme-color" content="#1F5138">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --ground:#F2F0E9; --card:#FFFFFF; --ink:#23251F; --muted:#6E6F63;
+    --line:#DDDAD0; --hunter:#1F5138; --hunter-ink:#FFFFFF;
+    --saddle:#7A4A21; --brass:#A9812F; --paid:#1F5138; --danger:#8C3B2E;
+    --chip:#E9E5D9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#111B15; --card:#1B2921; --ink:#EDEAE0; --muted:#9AA394;
+      --line:#2E3D33; --hunter:#4E9C77; --hunter-ink:#0E1812;
+      --saddle:#C98B4E; --brass:#C9A55A; --paid:#6FBE95; --danger:#D97A66;
+      --chip:#243530;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ground); color:var(--ink);
+    font-family:"Public Sans",system-ui,sans-serif; font-size:19px; line-height:1.45;
+    -webkit-tap-highlight-color:transparent}
+  .wrap{max-width:480px; margin:0 auto; padding:16px 16px 120px}
+  header{display:flex; align-items:center; justify-content:space-between; padding:6px 2px 14px; gap:8px}
+  h1{font-family:Fraunces,Georgia,serif; font-weight:700; font-size:25px; margin:0}
+  .iconbtn{background:none;border:none;color:var(--muted);font-size:22px;padding:8px;cursor:pointer}
+  .back{background:none;border:none;color:var(--hunter);font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;padding:8px 8px 8px 0}
+  .preview{background:var(--chip);border:1px solid var(--line);border-radius:12px;
+    padding:9px 14px;font-size:14px;color:var(--muted);margin-bottom:14px;text-align:center}
+  .totcard{background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:18px 20px 14px; text-align:center; margin-bottom:16px}
+  .lbl{font-size:14px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .totamt{font-family:Fraunces,Georgia,serif; font-weight:700; font-size:52px;
+    font-variant-numeric:tabular-nums; color:var(--hunter); line-height:1.1}
+  .fam{width:100%; display:flex; align-items:center; gap:12px; background:var(--card);
+    border:1px solid var(--line); border-radius:16px; padding:18px 16px; margin-bottom:10px;
+    font-family:inherit; font-size:19px; color:var(--ink); cursor:pointer; text-align:left}
+  .fam b{font-size:20px}
+  .fam .sub{font-size:14.5px; color:var(--muted)}
+  .fam .amt{margin-left:auto; font-weight:700; font-size:22px;
+    font-variant-numeric:tabular-nums; color:var(--hunter); white-space:nowrap}
+  .fam .amt.zero{color:var(--muted); font-size:16px; font-weight:600}
+  .fam .chev{color:var(--muted); font-size:20px}
+  .addfam{width:100%; background:none; border:2px dashed var(--line); border-radius:16px;
+    padding:16px; color:var(--muted); font-family:inherit; font-size:17px; font-weight:700; cursor:pointer}
+  .balcard{background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:20px 20px 16px; text-align:center}
+  #balance{font-family:Fraunces,Georgia,serif; font-weight:700; font-size:60px;
+    font-variant-numeric:tabular-nums; color:var(--hunter); margin:2px 0 0; line-height:1.1}
+  #balhint{font-size:15px; color:var(--muted); margin-top:4px}
+  #venmoReq{display:none;margin-top:12px;width:100%;background:#008CFF;color:#fff;border:none;
+    border-radius:14px;padding:16px;font-size:19px;font-weight:700;font-family:inherit;cursor:pointer}
+  .section{margin-top:20px}
+  .seclabel{font-size:14px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+    font-weight:600; margin:0 2px 10px; display:flex; justify-content:space-between; align-items:center}
+  .riders{display:flex; flex-direction:column; gap:10px}
+  .rbtn{display:flex; justify-content:space-between; align-items:center; width:100%;
+    background:var(--hunter); color:var(--hunter-ink); border:none; border-radius:16px;
+    padding:20px 20px; font-size:21px; font-weight:700; font-family:inherit; cursor:pointer}
+  .rbtn small{font-weight:600; opacity:.85; font-size:17px; font-variant-numeric:tabular-nums}
+  .rbtn:active{transform:scale(.985)}
+  .rowbtns{display:flex; gap:10px; margin-top:10px}
+  .obtn{flex:1; background:var(--card); color:var(--ink); border:1.5px solid var(--line);
+    border-radius:16px; padding:17px 10px; font-size:17px; font-weight:700; font-family:inherit; cursor:pointer}
+  .obtn.pay{color:var(--paid); border-color:var(--paid)}
+  .hist{background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden}
+  .hrow{display:flex; align-items:center; gap:10px; padding:15px 16px; font-size:17px; border-top:1px solid var(--line)}
+  .hrow:first-child{border-top:none}
+  .hwhat{flex:1; min-width:0}
+  .hwhat b{font-weight:600}
+  .hdate{font-size:14px; color:var(--muted)}
+  .hamt{font-weight:700; font-size:18px; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .hamt.charge{color:var(--saddle)}
+  .hamt.payment{color:var(--paid)}
+  .hx{background:none;border:none;color:var(--muted);font-size:19px;padding:9px;cursor:pointer}
+  .empty{padding:20px 16px; text-align:center; color:var(--muted); font-size:15px}
+  .textbtn{position:fixed; left:16px; right:16px; bottom:16px; max-width:448px; margin:0 auto;
+    background:var(--brass); color:#fff; border:none; border-radius:16px;
+    padding:18px; font-size:19px; font-weight:700; font-family:inherit; cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.18); display:none}
+  @media (prefers-color-scheme: dark){ .textbtn{color:#141005} }
+  dialog{border:none; border-radius:18px; background:var(--card); color:var(--ink);
+    width:min(92vw,420px); padding:20px; font-family:inherit}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog h2{font-family:Fraunces,Georgia,serif; font-size:21px; margin:0 0 12px}
+  .field{margin-bottom:12px}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--muted);
+    margin-bottom:5px; text-transform:uppercase; letter-spacing:.08em}
+  .field input, .field textarea{width:100%; font-size:18px; padding:12px; border:1.5px solid var(--line);
+    border-radius:12px; background:var(--ground); color:var(--ink); font-family:inherit}
+  .dbtns{display:flex; gap:10px; margin-top:16px}
+  .dbtns button{flex:1; padding:14px; border-radius:12px; font-size:16px; font-weight:700;
+    font-family:inherit; cursor:pointer; border:1.5px solid var(--line); background:var(--card); color:var(--ink)}
+  .dbtns .go{background:var(--hunter); color:var(--hunter-ink); border-color:var(--hunter)}
+  .dbtns .bad{color:var(--danger); border-color:var(--danger)}
+  .srow{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+  .srow input{flex:1; font-size:16px; padding:10px; border:1.5px solid var(--line);
+    border-radius:10px; background:var(--ground); color:var(--ink); font-family:inherit}
+  .srow input.pr{flex:0 0 84px; text-align:right; font-variant-numeric:tabular-nums}
+  .srow button{background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px}
+  .addr{background:none; border:1.5px dashed var(--line); border-radius:10px; width:100%;
+    padding:10px; color:var(--muted); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer}
+  #toast{position:fixed; bottom:86px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--ground); border-radius:12px; padding:11px 16px;
+    font-size:16px; font-weight:600; display:none; align-items:center; gap:14px; white-space:nowrap; z-index:5}
+  #toast button{background:none;border:none;color:var(--brass);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}
+  .foot{text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;letter-spacing:.08em}
+  button:focus-visible, input:focus-visible{outline:2.5px solid var(--brass); outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){ .rbtn:active{transform:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ROSTER VIEW -->
+  <div id="vRoster">
+    <header>
+      <h1>The Lesson Book</h1>
+      <button class="iconbtn" id="bookGear" aria-label="Book settings">&#9881;&#65039;</button>
+    </header>
+    <div class="preview">PREVIEW with sample families &mdash; Morgan's real app is unchanged</div>
+    <div class="totcard">
+      <div class="lbl">Owed across all families</div>
+      <div class="totamt" id="total">$0</div>
+    </div>
+    <p class="seclabel"><span>Your families</span></p>
+    <div id="famlist"></div>
+    <button class="addfam" id="addFam">+ Add a family</button>
+    <p class="foot">LESSON BOOK ROSTER &middot; preview 1</p>
+  </div>
+
+  <!-- CLIENT VIEW -->
+  <div id="vClient" style="display:none">
+    <header>
+      <button class="back" id="backBtn">&#8592; Families</button>
+      <button class="iconbtn" id="famGear" aria-label="Family settings">&#9881;&#65039;</button>
+    </header>
+    <h1 id="famName" style="margin-bottom:12px"></h1>
+    <div class="balcard">
+      <div class="lbl">This family owes you</div>
+      <div id="balance">$0</div>
+      <div id="balhint"></div>
+      <button id="venmoReq">Request on Venmo</button>
+    </div>
+    <div class="section">
+      <p class="seclabel"><span>Tap when a lesson happens</span></p>
+      <div class="riders" id="riders"></div>
+      <div class="rowbtns">
+        <button class="obtn" id="otherbtn">+ Something else</button>
+        <button class="obtn pay" id="paybtn">&#10003; I got paid</button>
+      </div>
+    </div>
+    <div class="section">
+      <p class="seclabel"><span>The book</span>
+        <button class="back" id="shareall" style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)">Send whole book</button>
+      </p>
+      <div class="hist" id="hist"></div>
+    </div>
+  </div>
+</div>
+
+<button class="textbtn" id="sendbtn">&#128241; Text this family an update</button>
+<div id="toast"><span id="toastmsg"></span><button id="undo">Undo</button></div>
+
+<dialog id="dOther">
+  <h2>Something else</h2>
+  <div class="field"><label>What was it?</label><input id="oLabel" placeholder="Trailering, show fee, tack&hellip;"></div>
+  <div class="field"><label>Amount ($)</label><input id="oAmt" type="number" inputmode="decimal" min="0" step="1"></div>
+  <div class="dbtns"><button id="oCancel">Cancel</button><button class="go" id="oGo">Add it</button></div>
+</dialog>
+
+<dialog id="dPay">
+  <h2>I got paid</h2>
+  <div class="field"><label>Amount ($)</label><input id="pAmt" type="number" inputmode="decimal" min="0" step="1"></div>
+  <div class="dbtns"><button id="pCancel">Cancel</button><button class="go" id="pGo">Record it</button></div>
+</dialog>
+
+<dialog id="dMsg">
+  <h2>Ready to send</h2>
+  <textarea id="msgBox" readonly rows="9" style="width:100%;font-size:15px;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--ground);color:var(--ink);font-family:inherit;line-height:1.5"></textarea>
+  <div class="dbtns">
+    <button id="mClose">Close</button>
+    <button id="mCopy">Copy it</button>
+    <button id="mMail" style="display:none">Email it</button>
+    <button class="go" id="mSms">Open Messages</button>
+  </div>
+</dialog>
+
+<dialog id="dFam">
+  <h2 id="dFamTitle">Family settings</h2>
+  <div class="field"><label>Family name</label><input id="fName" placeholder="Smith Family"></div>
+  <p class="seclabel" style="margin-top:14px"><span>Riders &amp; prices</span></p>
+  <div id="slist"></div>
+  <button class="addr" id="sAdd">+ Add a rider</button>
+  <div class="field" style="margin-top:14px"><label>They already owed me ($, optional)</label><input id="sStart" type="number" inputmode="decimal" step="1"></div>
+  <div class="field"><label>Their Venmo (for one-tap requests)</label><input id="sVenmo" autocapitalize="none" placeholder="Their-Venmo-Name"></div>
+  <div class="field"><label>Their email (for updates)</label><input id="sEmail" type="email" autocapitalize="none" placeholder="name@email.com"></div>
+  <div class="dbtns"><button id="sCancel">Cancel</button><button class="go" id="sGo">Save</button></div>
+  <div class="dbtns" id="sDelRow" style="margin-top:8px"><button class="bad" id="sDel">Remove this family</button></div>
+</dialog>
+
+<dialog id="dBook">
+  <h2>Book settings</h2>
+  <div class="dbtns" style="margin-top:0"><button class="go" id="bkExport">Copy a backup of everything</button></div>
+  <div class="field" style="margin-top:14px"><label>Restore from a backup (paste here)</label><textarea id="bkPaste" rows="3" placeholder="Paste a backup&hellip;"></textarea></div>
+  <div class="dbtns"><button id="bkRestore">Restore</button><button class="bad" id="bkFresh">Start fresh (clear samples)</button></div>
+  <div class="dbtns"><button id="bkClose">Close</button></div>
+</dialog>
+
+<script>
+(function(){
+  var KEY="lessonbookpro.p1";
+  function daysAgo(n){ var d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
+  function sample(){
+    return {clients:[
+      {id:"c1", name:"Ahles Family", venmo:"Benjamin-Ahles", email:"",
+       riders:[{name:"Alix",price:70},{name:"Wynn",price:70},{name:"Marlowe",price:70}], lastReport:0,
+       entries:[
+        {id:"a1",date:daysAgo(9),kind:"lesson",label:"Lesson — Alix",amount:70},
+        {id:"a2",date:daysAgo(7),kind:"lesson",label:"Lesson — Wynn",amount:70},
+        {id:"a3",date:daysAgo(4),kind:"payment",label:"Payment received",amount:140},
+        {id:"a4",date:daysAgo(2),kind:"lesson",label:"Lesson — Marlowe",amount:70},
+        {id:"a5",date:daysAgo(1),kind:"lesson",label:"Lesson — Alix",amount:70}]},
+      {id:"c2", name:"Sample: Whitfield Family", venmo:"", email:"",
+       riders:[{name:"Emma",price:65}], lastReport:0,
+       entries:[
+        {id:"b1",date:daysAgo(6),kind:"lesson",label:"Lesson — Emma",amount:65},
+        {id:"b2",date:daysAgo(3),kind:"lesson",label:"Lesson — Emma",amount:65},
+        {id:"b3",date:daysAgo(3),kind:"charge",label:"Show fee",amount:45}]},
+      {id:"c3", name:"Sample: Okafor Family", venmo:"", email:"",
+       riders:[{name:"Deji",price:75},{name:"Amara",price:75}], lastReport:0,
+       entries:[
+        {id:"d1",date:daysAgo(5),kind:"lesson",label:"Lesson — Deji",amount:75},
+        {id:"d2",date:daysAgo(5),kind:"lesson",label:"Lesson — Amara",amount:75},
+        {id:"d3",date:daysAgo(0),kind:"payment",label:"Payment received",amount:150}]}
+    ]};
+  }
+  var S=null;
+  try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.clients) S=j; }catch(e){}
+  if(!S) S=sample();
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  function money(n){ return "$"+(Math.round(n*100)/100).toLocaleString(undefined,{maximumFractionDigits:2}); }
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function fmtDate(iso){ var d=new Date(iso+"T12:00:00");
+    return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}); }
+  function balOf(c){ var b=0; c.entries.forEach(function(e){ b += (e.kind==="payment"?-e.amount:e.amount); }); return b; }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch];}); }
+  var cur=null;
+  function C(){ return S.clients.find(function(c){return c.id===cur;}); }
+
+  var undoFn=null, toastTimer=null;
+  function toast(msg, fn){
+    document.getElementById("toastmsg").textContent=msg;
+    undoFn=fn||null;
+    document.getElementById("undo").style.display = fn ? "inline" : "none";
+    var t=document.getElementById("toast"); t.style.display="flex";
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.style.display="none"; undoFn=null; },8000);
+  }
+  document.getElementById("undo").onclick=function(){
+    if(undoFn){ undoFn(); undoFn=null; save(); render(); }
+    document.getElementById("toast").style.display="none";
+  };
+
+  // ---------- render ----------
+  function render(){
+    if(cur===null) renderRoster(); else renderClient();
+  }
+  function renderRoster(){
+    document.getElementById("vRoster").style.display="block";
+    document.getElementById("vClient").style.display="none";
+    document.getElementById("sendbtn").style.display="none";
+    var tot=0; S.clients.forEach(function(c){ tot+=Math.max(0,balOf(c)); });
+    document.getElementById("total").textContent=money(tot);
+    var L=document.getElementById("famlist"); L.innerHTML="";
+    S.clients.forEach(function(c){
+      var b=balOf(c);
+      var btn=document.createElement("button");
+      btn.className="fam"; btn.type="button";
+      btn.innerHTML="<span><b>"+esc(c.name)+"</b><div class='sub'>"+
+        c.riders.map(function(r){return esc(r.name);}).join(", ")+"</div></span>"+
+        "<span class='amt"+(b>0.001?"":" zero")+"'>"+(b>0.001?money(b):"settled")+"</span>"+
+        "<span class='chev'>&#8250;</span>";
+      btn.onclick=function(){ cur=c.id; render(); window.scrollTo(0,0); };
+      L.appendChild(btn);
+    });
+  }
+  function renderClient(){
+    var c=C(); if(!c){ cur=null; renderRoster(); return; }
+    document.getElementById("vRoster").style.display="none";
+    document.getElementById("vClient").style.display="block";
+    document.getElementById("sendbtn").style.display="block";
+    document.getElementById("famName").textContent=c.name;
+    var b=balOf(c);
+    document.getElementById("balance").textContent=money(b);
+    document.getElementById("balance").style.color = b>0.001 ? "var(--hunter)" : "var(--muted)";
+    var lessons=c.entries.filter(function(e){return e.kind==="lesson";}).length;
+    document.getElementById("balhint").textContent = b<=0.001 ? "All settled up" :
+      lessons+" lesson"+(lessons===1?"":"s")+" in the book";
+    var vq=document.getElementById("venmoReq");
+    if(b>0.001 && c.venmo){ vq.style.display="block"; vq.textContent="Request "+money(b)+" on Venmo"; }
+    else vq.style.display="none";
+    var R=document.getElementById("riders"); R.innerHTML="";
+    c.riders.forEach(function(r){
+      var btn=document.createElement("button");
+      btn.className="rbtn"; btn.type="button";
+      btn.innerHTML="<span>+ Lesson &middot; "+esc(r.name)+"</span><small>"+money(r.price)+"</small>";
+      btn.onclick=function(){ addEntry("lesson","Lesson — "+r.name, r.price); };
+      R.appendChild(btn);
+    });
+    var H=document.getElementById("hist"); H.innerHTML="";
+    if(!c.entries.length){
+      H.innerHTML='<div class="empty">Nothing yet for this family.</div>';
+    } else {
+      c.entries.slice().reverse().forEach(function(e){
+        var row=document.createElement("div"); row.className="hrow";
+        var amtClass = e.kind==="payment" ? "payment" : "charge";
+        var sign = e.kind==="payment" ? "&minus;" : "+";
+        row.innerHTML='<div class="hwhat"><b>'+esc(e.label)+'</b><div class="hdate">'+fmtDate(e.date)+
+          '</div></div><div class="hamt '+amtClass+'">'+sign+money(e.amount)+
+          '</div><button class="hx" aria-label="Remove">&#10005;</button>';
+        row.querySelector(".hx").onclick=function(){
+          var idx=c.entries.findIndex(function(x){return x.id===e.id;});
+          if(idx<0) return;
+          var removed=c.entries.splice(idx,1)[0];
+          save(); render();
+          toast("Removed: "+e.label+" — "+money(e.amount),
+            function(){ c.entries.splice(Math.min(idx,c.entries.length),0,removed); });
+        };
+        H.appendChild(row);
+      });
+    }
+  }
+  function addEntry(kind,label,amount){
+    var c=C(); if(!c) return;
+    var e={id:Date.now()+"-"+Math.random().toString(36).slice(2,6), date:today(), kind:kind, label:label, amount:amount};
+    c.entries.push(e); save(); render();
+    toast((kind==="payment"?"Payment recorded: ":"Added: ")+label+" — "+money(amount),
+      function(){ c.entries=c.entries.filter(function(x){return x.id!==e.id;}); });
+  }
+
+  document.getElementById("backBtn").onclick=function(){ cur=null; render(); };
+
+  // ---------- entry dialogs ----------
+  var dOther=document.getElementById("dOther"), dPay=document.getElementById("dPay");
+  document.getElementById("otherbtn").onclick=function(){
+    document.getElementById("oLabel").value=""; document.getElementById("oAmt").value=""; dOther.showModal(); };
+  document.getElementById("oCancel").onclick=function(){ dOther.close(); };
+  document.getElementById("oGo").onclick=function(){
+    var l=document.getElementById("oLabel").value.trim()||"Other";
+    var a=parseFloat(document.getElementById("oAmt").value);
+    if(!(a>0)){ document.getElementById("oAmt").focus(); return; }
+    dOther.close(); addEntry("charge",l,a);
+  };
+  document.getElementById("paybtn").onclick=function(){
+    var c=C(); var b=c?balOf(c):0;
+    document.getElementById("pAmt").value = b>0 ? String(Math.round(b*100)/100) : "";
+    dPay.showModal();
+  };
+  document.getElementById("pCancel").onclick=function(){ dPay.close(); };
+  document.getElementById("pGo").onclick=function(){
+    var a=parseFloat(document.getElementById("pAmt").value);
+    if(!(a>0)){ document.getElementById("pAmt").focus(); return; }
+    dPay.close(); addEntry("payment","Payment received",a);
+  };
+
+  // ---------- venmo ----------
+  document.getElementById("venmoReq").onclick=function(){
+    var c=C(); if(!c) return;
+    var b=balOf(c); if(!(b>0) || !c.venmo) return;
+    var amt=(Math.round(b*100)/100);
+    var user=c.venmo.replace(/^@/,"");
+    var note="Riding lessons — "+c.name+" — through "+fmtDate(today());
+    var appUrl="venmo://paycharge?txn=charge&recipients="+encodeURIComponent(user)+
+      "&amount="+amt+"&note="+encodeURIComponent(note);
+    var webUrl="https://venmo.com/?txn=charge&recipients="+encodeURIComponent(user)+
+      "&amount="+amt+"&note="+encodeURIComponent(note);
+    var t=setTimeout(function(){ if(!document.hidden){ location.href=webUrl; } },1400);
+    window.addEventListener("pagehide",function(){ clearTimeout(t); },{once:true});
+    document.addEventListener("visibilitychange",function(){ if(document.hidden) clearTimeout(t); },{once:true});
+    location.href=appUrl;
+  };
+
+  // ---------- share / messages ----------
+  function showMsgDialog(msg){
+    var c=C();
+    var box=document.getElementById("msgBox");
+    box.value=msg;
+    document.getElementById("mSms").onclick=function(){
+      var a=document.createElement("a");
+      a.href="sms:?&body="+encodeURIComponent(msg); a.click();
+    };
+    var mb=document.getElementById("mMail");
+    if(c && c.email){
+      mb.style.display="block";
+      mb.onclick=function(){
+        var a=document.createElement("a");
+        a.href="mailto:"+encodeURIComponent(c.email)+
+          "?subject="+encodeURIComponent(c.name+" — Lesson Book update")+
+          "&body="+encodeURIComponent(msg);
+        a.click();
+      };
+    } else mb.style.display="none";
+    document.getElementById("dMsg").showModal();
+    box.focus(); box.select();
+  }
+  document.getElementById("mCopy").onclick=function(){
+    var box=document.getElementById("msgBox");
+    box.focus(); box.select(); box.setSelectionRange(0, box.value.length);
+    var ok=false; try{ ok=document.execCommand("copy"); }catch(e){}
+    if(navigator.clipboard){ navigator.clipboard.writeText(box.value)
+      .then(function(){ toast("Copied — now paste it into a text"); })
+      .catch(function(){ if(ok) toast("Copied — now paste it into a text"); }); }
+    else if(ok) toast("Copied — now paste it into a text");
+  };
+  document.getElementById("mClose").onclick=function(){ document.getElementById("dMsg").close(); };
+  function shareText(msg){
+    if(navigator.share){
+      navigator.share({text:msg}).then(function(){}).catch(function(err){
+        if(err && err.name==="AbortError") return;
+        tryClipboardThenDialog(msg);
+      });
+      return;
+    }
+    tryClipboardThenDialog(msg);
+  }
+  function tryClipboardThenDialog(msg){
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(msg).then(function(){ toast("Copied — now paste it into a text"); })
+        .catch(function(){ showMsgDialog(msg); });
+    } else showMsgDialog(msg);
+  }
+  function entryLine(e){
+    return fmtDate(e.date)+" — "+e.label+" "+(e.kind==="payment"?"-":"+")+money(e.amount);
+  }
+  function tsOf(e){ return new Date(e.date+"T12:00:00").getTime(); }
+  document.getElementById("sendbtn").onclick=function(){
+    var c=C(); if(!c) return;
+    var b=balOf(c);
+    var since=c.entries.filter(function(e){ return tsOf(e) > (c.lastReport||0); });
+    var list = since.length ? since : c.entries.slice(-5);
+    var lines=[c.name+" — Lesson Book update ("+fmtDate(today())+")","","You owe me: "+money(b)];
+    if(list.length){
+      lines.push("", since.length ? "Since my last update:" : "Most recent:");
+      list.forEach(function(e){ lines.push("  "+entryLine(e)); });
+    }
+    c.lastReport=Date.now(); save();
+    shareText(lines.join("\n"));
+  };
+  document.getElementById("shareall").onclick=function(){
+    var c=C(); if(!c) return;
+    var b=balOf(c);
+    var lessons=c.entries.filter(function(e){return e.kind==="lesson";}).length;
+    var paid=c.entries.filter(function(e){return e.kind==="payment";})
+      .reduce(function(s,e){return s+e.amount;},0);
+    var lines=[c.name+" — the whole book ("+fmtDate(today())+")",""];
+    c.entries.forEach(function(e){ lines.push(entryLine(e)); });
+    lines.push("", lessons+" lessons total · paid so far: "+money(paid), "Balance owed: "+money(b));
+    shareText(lines.join("\n"));
+  };
+
+  // ---------- family settings (edit + add) ----------
+  var dFam=document.getElementById("dFam");
+  var famEditing=null; // client id, or "NEW"
+  function srow(L,name,price){
+    var d=document.createElement("div"); d.className="srow";
+    d.innerHTML='<input value="'+esc(name)+'" placeholder="Rider name"><input class="pr" type="number" inputmode="decimal" value="'+price+'"><button aria-label="Remove rider">&#10005;</button>';
+    d.querySelector("button").onclick=function(){ d.remove(); };
+    L.appendChild(d);
+  }
+  function openFam(id){
+    famEditing=id;
+    var isNew = id==="NEW";
+    var c = isNew ? {name:"",riders:[{name:"",price:70}],venmo:"",email:""} : C();
+    document.getElementById("dFamTitle").textContent = isNew ? "New family" : "Family settings";
+    document.getElementById("fName").value=c.name||"";
+    var L=document.getElementById("slist"); L.innerHTML="";
+    c.riders.forEach(function(r){ srow(L,r.name,r.price); });
+    document.getElementById("sStart").value="";
+    document.getElementById("sVenmo").value=c.venmo||"";
+    document.getElementById("sEmail").value=c.email||"";
+    document.getElementById("sDelRow").style.display = isNew ? "none" : "flex";
+    dFam.showModal();
+  }
+  document.getElementById("famGear").onclick=function(){ openFam(cur); };
+  document.getElementById("addFam").onclick=function(){ openFam("NEW"); };
+  document.getElementById("sAdd").onclick=function(){ srow(document.getElementById("slist"),"",70); };
+  document.getElementById("sCancel").onclick=function(){ dFam.close(); };
+  document.getElementById("sGo").onclick=function(){
+    var name=document.getElementById("fName").value.trim();
+    if(!name){ document.getElementById("fName").focus(); return; }
+    var rows=document.getElementById("slist").querySelectorAll(".srow"), riders=[];
+    rows.forEach(function(d){
+      var n=d.querySelector("input").value.trim(), p=parseFloat(d.querySelector(".pr").value);
+      if(n && p>0) riders.push({name:n, price:p});
+    });
+    if(!riders.length){ return; }
+    var venmo=document.getElementById("sVenmo").value.trim().replace(/^@/,"");
+    var email=document.getElementById("sEmail").value.trim();
+    var st=parseFloat(document.getElementById("sStart").value);
+    if(famEditing==="NEW"){
+      var c={id:"c"+Date.now(), name:name, riders:riders, venmo:venmo, email:email, entries:[], lastReport:0};
+      if(st>0) c.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
+      S.clients.push(c); cur=c.id;
+    } else {
+      var c2=C(); c2.name=name; c2.riders=riders; c2.venmo=venmo; c2.email=email;
+      if(st>0) c2.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
+    }
+    save(); render(); dFam.close();
+  };
+  document.getElementById("sDel").onclick=function(){
+    var c=C(); if(!c) return;
+    var idx=S.clients.findIndex(function(x){return x.id===c.id;});
+    var removed=S.clients.splice(idx,1)[0];
+    cur=null; save(); render(); dFam.close();
+    toast("Removed "+removed.name, function(){ S.clients.splice(idx,0,removed); cur=null; });
+  };
+
+  // ---------- book settings: backup / restore / fresh ----------
+  var dBook=document.getElementById("dBook");
+  document.getElementById("bookGear").onclick=function(){
+    document.getElementById("bkPaste").value=""; dBook.showModal(); };
+  document.getElementById("bkClose").onclick=function(){ dBook.close(); };
+  document.getElementById("bkExport").onclick=function(){
+    var blob="LESSONBOOK-BACKUP:"+JSON.stringify(S);
+    if(navigator.clipboard){ navigator.clipboard.writeText(blob)
+      .then(function(){ toast("Backup copied — paste it into an email or note"); })
+      .catch(function(){ showMsgDialog(blob); }); }
+    else showMsgDialog(blob);
+  };
+  document.getElementById("bkRestore").onclick=function(){
+    var t=document.getElementById("bkPaste").value.trim();
+    var i=t.indexOf("LESSONBOOK-BACKUP:");
+    if(i<0){ toast("That doesn't look like a backup"); return; }
+    try{
+      var j=JSON.parse(t.slice(i+18));
+      if(j && j.clients){ S=j; cur=null; save(); render(); dBook.close(); toast("Book restored"); }
+      else toast("That doesn't look like a backup");
+    }catch(e){ toast("That doesn't look like a backup"); }
+  };
+  document.getElementById("bkFresh").onclick=function(){
+    S={clients:[]}; cur=null; save(); render(); dBook.close();
+    toast("Fresh book — add your first family");
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
