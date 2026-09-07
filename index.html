@@ -158,7 +158,7 @@
     </p>
     <div class="hist" id="hist"></div>
     <p class="tip" id="tip"></p>
-    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">AHLES FAMILY LESSON BOOK &middot; v12</p>
+    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:16px;letter-spacing:.08em">AHLES FAMILY LESSON BOOK &middot; v13</p>
   </div>
 </div>
 
@@ -205,6 +205,7 @@
   <div class="field" style="margin-top:14px"><label>They already owed me ($, optional)</label><input id="sStart" type="number" inputmode="decimal" step="1"></div>
   <div class="field"><label>Family's Venmo (for one-tap requests)</label><input id="sVenmo" placeholder="Benjamin-Ahles" autocapitalize="none"></div>
   <div class="field"><label>Your Zelle (phone or email the family pays)</label><input id="sZelle" placeholder="phone or email" autocapitalize="none"></div>
+  <div class="field"><label>Family's phone (texts go straight to them)</label><input id="sPhone" type="tel" placeholder="845-555-0123" autocapitalize="none"></div>
   <div class="field"><label>Family's email (for one-tap updates)</label><input id="sEmail" type="email" placeholder="name@email.com" autocapitalize="none"></div>
   <div class="dbtns"><button id="sCancel">Cancel</button><button class="go" id="sGo">Save</button></div>
 </dialog>
@@ -216,7 +217,7 @@
     return {riders:[{name:"Alix",price:70},{name:"Wynn",price:70},{name:"Marlowe",price:70}],
             entries:[], lastReport:0, seenTip:false,
             email:"ahlesart@gmail.com", venmo:"Benjamin-Ahles",
-            zelle:"", board:null};
+            zelle:"", board:null, phone:""};
   }
   var S=defaults();
   try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.riders) S=j; }catch(e){}
@@ -230,11 +231,12 @@
   // she bookmarks, nothing in the public file)
   try{
     var q=new URLSearchParams(location.search);
-    var qv=q.get("venmo"), qe=q.get("email"), qz=q.get("zelle");
-    if(qv||qe||qz){
+    var qv=q.get("venmo"), qe=q.get("email"), qz=q.get("zelle"), qp=q.get("phone");
+    if(qv||qe||qz||qp){
       if(qv) S.venmo=qv.replace(/^@/,"");
       if(qe) S.email=qe;
       if(qz) S.zelle=qz;
+      if(qp) S.phone=qp;
       try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
       history.replaceState(null,"",location.pathname);
     }
@@ -354,14 +356,19 @@
     location.href=appUrl;
   };
 
-  // Zelle has no request link like Venmo's, so this composes a text to the
-  // family with the amount and her Zelle handle -- one tap, she hits send
+  // Zelle has no request link like Venmo's, so this composes a text with
+  // the amount and her Zelle handle -- pre-addressed to the family's
+  // number when it's set, so it's tap, send, done
+  function smsHref(msg){
+    return "sms:"+(S.phone ? encodeURIComponent(S.phone.trim()) : "")+
+      "?&body="+encodeURIComponent(msg);
+  }
   document.getElementById("zelleBtn").onclick=function(){
     var b=balance(); if(!(b>0) || !S.zelle) return;
     var msg="Lesson book balance: "+money(Math.round(b*100)/100)+
       " — you can Zelle me at "+S.zelle+". Thank you!";
     var a=document.createElement("a");
-    a.href="sms:?&body="+encodeURIComponent(msg);
+    a.href=smsHref(msg);
     a.click();
   };
 
@@ -411,6 +418,7 @@
     document.getElementById("sStart").value="";
     document.getElementById("sVenmo").value=S.venmo||"";
     document.getElementById("sZelle").value=S.zelle||"";
+    document.getElementById("sPhone").value=S.phone||"";
     document.getElementById("sEmail").value=S.email||"";
     dSet.showModal();
   };
@@ -433,6 +441,7 @@
     if(st>0) S.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
     S.venmo=document.getElementById("sVenmo").value.trim().replace(/^@/,"");
     S.zelle=document.getElementById("sZelle").value.trim();
+    S.phone=document.getElementById("sPhone").value.trim();
     S.email=document.getElementById("sEmail").value.trim();
     S.seenTip=true; save(); render(); dSet.close();
   };
@@ -446,7 +455,7 @@
     box.value=msg;
     document.getElementById("mSms").onclick=function(){
       var a=document.createElement("a");
-      a.href="sms:?&body="+encodeURIComponent(msg);
+      a.href=smsHref(msg);
       a.click();
     };
     var mb=document.getElementById("mMail");
