@@ -79,6 +79,10 @@
   .obtn{flex:1; background:var(--card); color:var(--ink); border:1.5px solid var(--line);
     border-radius:16px; padding:17px 10px; font-size:17px; font-weight:700; font-family:inherit; cursor:pointer}
   .obtn.pay{color:var(--paid); border-color:var(--paid)}
+  .hchip{padding:10px 8px; font-size:15px; color:var(--muted)}
+  .hchip.on{color:var(--hunter); border-color:var(--hunter)}
+  .histtotal{padding:13px 16px; font-size:15px; font-weight:700; color:var(--paid);
+    border-top:1.5px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
   .hist{background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden}
   .hrow{display:flex; align-items:center; gap:10px; padding:15px 16px; font-size:17px; border-top:1px solid var(--line)}
   .hrow:first-child{border-top:none}
@@ -146,7 +150,7 @@
     <p class="seclabel"><span>Your families</span></p>
     <div id="famlist"></div>
     <button class="addfam" id="addFam">+ Add a family</button>
-    <p class="foot">THE LESSON BOOK &middot; v14</p>
+    <p class="foot">THE LESSON BOOK &middot; v14.1</p>
   </div>
 
   <!-- CLIENT VIEW -->
@@ -176,6 +180,11 @@
       <p class="seclabel"><span>The book</span>
         <button class="back" id="shareall" style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)">Send whole book</button>
       </p>
+      <div class="rowbtns" style="margin:0 0 10px">
+        <button class="obtn hchip on" data-f="all">All</button>
+        <button class="obtn hchip" data-f="payment">Payments</button>
+        <button class="obtn hchip" data-f="charge">Charges</button>
+      </div>
       <div class="hist" id="hist"></div>
     </div>
   </div>
@@ -293,7 +302,11 @@
   function balOf(c){ var b=0; c.entries.forEach(function(e){ b += (e.kind==="payment"?-e.amount:e.amount); }); return b; }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch];}); }
   var cur=null;
+  var histFilter="all";
   function C(){ return S.clients.find(function(c){return c.id===cur;}); }
+  document.querySelectorAll(".hchip").forEach(function(ch){
+    ch.onclick=function(){ histFilter=ch.dataset.f; render(); };
+  });
   function smsHref(msg, phone){
     return "sms:"+(phone ? encodeURIComponent(String(phone).trim()) : "")+
       "?&body="+encodeURIComponent(msg);
@@ -333,7 +346,7 @@
         (c.board ? " &middot; board: "+esc(c.board.name) : "")+"</div></span>"+
         "<span class='amt"+(b>0.001?"":" zero")+"'>"+(b>0.001?money(b):"settled")+"</span>"+
         "<span class='chev'>&#8250;</span>";
-      btn.onclick=function(){ cur=c.id; render(); window.scrollTo(0,0); };
+      btn.onclick=function(){ cur=c.id; histFilter="all"; render(); window.scrollTo(0,0); };
       L.appendChild(btn);
     });
   }
@@ -369,11 +382,21 @@
       document.getElementById("boardlbl").innerHTML="+ Board &middot; "+esc(c.board.name);
       document.getElementById("boardrate").textContent = c.board.rate ? money(c.board.rate)+"/mo" : "set rate";
     } else bb.style.display="none";
+    document.querySelectorAll(".hchip").forEach(function(ch){
+      ch.className = "obtn hchip" + (ch.dataset.f===histFilter ? " on" : "");
+    });
+    var shown = c.entries.filter(function(e){
+      if(histFilter==="payment") return e.kind==="payment";
+      if(histFilter==="charge") return e.kind!=="payment";
+      return true;
+    });
     var H=document.getElementById("hist"); H.innerHTML="";
-    if(!c.entries.length){
-      H.innerHTML='<div class="empty">Nothing yet for this family.</div>';
+    if(!shown.length){
+      H.innerHTML='<div class="empty">'+(histFilter==="payment" ? "No payments yet for this family."
+        : histFilter==="charge" ? "No charges yet for this family."
+        : "Nothing yet for this family.")+'</div>';
     } else {
-      c.entries.slice().reverse().forEach(function(e){
+      shown.slice().reverse().forEach(function(e){
         var row=document.createElement("div"); row.className="hrow";
         var amtClass = e.kind==="payment" ? "payment" : "charge";
         var sign = e.kind==="payment" ? "&minus;" : "+";
@@ -390,6 +413,12 @@
         };
         H.appendChild(row);
       });
+      if(histFilter!=="all"){
+        var tot=shown.reduce(function(s,e){return s+e.amount;},0);
+        var trow=document.createElement("div"); trow.className="histtotal";
+        trow.textContent=(histFilter==="payment" ? "Total received: " : "Total charged: ")+money(tot);
+        H.appendChild(trow);
+      }
     }
   }
   function addEntry(kind,label,amount){
