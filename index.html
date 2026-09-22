@@ -69,7 +69,7 @@
     padding:20px 20px; font-size:21px; font-weight:700; font-family:inherit; cursor:pointer}
   .rbtn small{font-weight:600; opacity:.85; font-size:17px; font-variant-numeric:tabular-nums}
   .rbtn:active{transform:scale(.985)}
-  .bbtn{display:none; justify-content:space-between; align-items:center; width:100%;
+  .bbtn{display:flex; justify-content:space-between; align-items:center; width:100%;
     background:var(--saddle); color:#fff; border:none; border-radius:16px;
     padding:20px 20px; font-size:21px; font-weight:700; font-family:inherit; cursor:pointer; margin-top:10px}
   .bbtn small{font-weight:600; opacity:.85; font-size:17px; font-variant-numeric:tabular-nums}
@@ -99,6 +99,35 @@
     padding:18px; font-size:19px; font-weight:700; font-family:inherit; cursor:pointer;
     box-shadow:0 6px 20px rgba(0,0,0,.18); display:none}
   @media (prefers-color-scheme: dark){ .textbtn{color:#141005} }
+  .frow{background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:14px 14px; margin-bottom:10px}
+  .frow .top{display:flex; align-items:center; gap:8px}
+  .frow .top b{font-size:19px}
+  .frow .famchip{font-size:12.5px; color:var(--muted); background:var(--chip);
+    border-radius:999px; padding:2px 9px; white-space:nowrap}
+  .frow .meta{font-size:14.5px; color:var(--muted); margin-top:3px}
+  .frow .actions{display:flex; gap:8px; margin-top:10px}
+  .frow .shodbtn{flex:1; background:var(--saddle); color:#fff; border:none; border-radius:12px;
+    padding:13px 10px; font-size:16.5px; font-weight:700; font-family:inherit; cursor:pointer}
+  @media (prefers-color-scheme: dark){ .frow .shodbtn{color:#1A1008} }
+  .frow .cfgbtn{background:var(--card); color:var(--muted); border:1.5px solid var(--line);
+    border-radius:12px; padding:13px 14px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer}
+  .duepill{display:inline-block; font-size:12px; font-weight:700; letter-spacing:.04em;
+    padding:2px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted);
+    margin-left:auto; white-space:nowrap}
+  .duepill.soon{color:var(--brass); border-color:var(--brass)}
+  .duepill.now{color:#fff; background:var(--danger); border-color:var(--danger)}
+  .visitcard{background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:14px 16px; margin-bottom:16px; display:flex; align-items:center; gap:10px; cursor:pointer}
+  .visitcard b{font-size:17px}
+  .visitcard .sub{font-size:14px; color:var(--muted)}
+  .famfar{display:flex; align-items:center; gap:8px; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:8px; font-size:14.5px}
+  .famfar .nm{font-weight:600}
+  .famfar .when{color:var(--muted); flex:1; min-width:0}
+  .famfar .mini{background:var(--saddle); color:#fff; border:none; border-radius:10px;
+    padding:8px 12px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap}
+  @media (prefers-color-scheme: dark){ .famfar .mini{color:#1A1008} }
   dialog{border:none; border-radius:18px; background:var(--card); color:var(--ink);
     width:min(92vw,420px); padding:20px; font-family:inherit}
   dialog::backdrop{background:rgba(0,0,0,.45)}
@@ -147,10 +176,34 @@
       <div class="lbl">Owed across all families</div>
       <div class="totamt" id="total">$0</div>
     </div>
+    <button class="fam" id="goFarrier" type="button">
+      <span><b>&#128736;&#65039; The Farrier Book</b><div class="sub" id="farSub"></div></span>
+      <span class="chev">&#8250;</span>
+    </button>
     <p class="seclabel"><span>Your families</span></p>
     <div id="famlist"></div>
     <button class="addfam" id="addFam">+ Add a family</button>
-    <p class="foot">THE LESSON BOOK &middot; v14.1</p>
+    <p class="foot">THE LESSON BOOK &middot; v16</p>
+  </div>
+
+  <!-- FARRIER VIEW -->
+  <div id="vFarrier" style="display:none">
+    <header>
+      <button class="back" id="farBack">&#8592; Families</button>
+    </header>
+    <h1 style="margin-bottom:12px">The Farrier Book</h1>
+    <div class="visitcard" id="visitCard">
+      <span style="font-size:22px">&#128197;</span>
+      <span style="flex:1"><b id="visitWhen">No visit booked</b>
+      <div class="sub" id="visitNote">Tap to set the next farrier visit</div></span>
+      <span class="chev">&#8250;</span>
+    </div>
+    <p class="seclabel"><span>The horses</span></p>
+    <div id="horselist"></div>
+    <button class="addfam" id="addHorse" style="margin-top:2px">+ Add one of your own horses</button>
+    <p class="hintline" style="margin:10px 2px 0">Board horses from every family appear here on their
+      own &mdash; &ldquo;Shod today&rdquo; bills that family&rsquo;s book automatically. Your own
+      horses live in your <b>My Horses</b> book, where farrier costs are logged as your expenses.</p>
   </div>
 
   <!-- CLIENT VIEW -->
@@ -161,16 +214,16 @@
     </header>
     <h1 id="famName" style="margin-bottom:12px"></h1>
     <div class="balcard">
-      <div class="lbl">This family owes you</div>
+      <div class="lbl" id="balLbl">This family owes you</div>
       <div id="balance">$0</div>
       <div id="balhint"></div>
       <button id="venmoReq">Request on Venmo</button>
       <button id="zelleBtn">Text a Zelle request</button>
     </div>
     <div class="section">
-      <p class="seclabel"><span>Tap when a lesson happens</span></p>
+      <p class="seclabel"><span id="tapLbl">Tap when a lesson happens</span></p>
       <div class="riders" id="riders"></div>
-      <button id="boardbtn" class="bbtn"><span id="boardlbl">+ Board</span><small id="boardrate"></small></button>
+      <div id="boards"></div>
       <div class="rowbtns">
         <button class="obtn" id="otherbtn">+ Something else</button>
         <button class="obtn pay" id="paybtn">&#10003; I got paid</button>
@@ -213,6 +266,31 @@
   <div class="dbtns"><button id="bCancel">Cancel</button><button class="go" id="bGo">Add it</button></div>
 </dialog>
 
+<dialog id="dShod">
+  <h2 id="shTitle">Shod today</h2>
+  <div class="field"><label>What the farrier charged ($)</label><input id="shAmt" type="number" inputmode="decimal" min="0" step="1"></div>
+  <p class="hintline" id="shHint"></p>
+  <div class="dbtns"><button id="shCancel">Cancel</button><button class="go" id="shGo">Log it</button></div>
+</dialog>
+
+<dialog id="dHorse">
+  <h2 id="hTitle">Hoof care settings</h2>
+  <div class="fieldrow">
+    <div class="field"><label>Shod every (weeks)</label><input id="hCycle" type="number" inputmode="numeric" min="1" step="1"></div>
+    <div class="field"><label>Usual charge ($)</label><input id="hFee" type="number" inputmode="decimal" min="0" step="1"></div>
+  </div>
+  <div class="field"><label>Last done (leave blank if unknown)</label><input id="hLast" type="date"></div>
+  <div class="dbtns"><button id="hCancel">Cancel</button><button class="go" id="hGo">Save</button></div>
+  <div class="dbtns" id="hDelRow" style="margin-top:8px"><button class="bad" id="hDel">Remove this horse from the farrier book</button></div>
+</dialog>
+
+<dialog id="dVisit">
+  <h2>Next farrier visit</h2>
+  <div class="field"><label>Date</label><input id="vDate" type="date"></div>
+  <div class="field"><label>Note (which horses, time&hellip;)</label><input id="vNote" placeholder="Giorgio + Buckey, morning"></div>
+  <div class="dbtns"><button id="vClear">Clear it</button><button id="vCancel">Cancel</button><button class="go" id="vGo">Save</button></div>
+</dialog>
+
 <dialog id="dMsg">
   <h2>Ready to send</h2>
   <textarea id="msgBox" readonly rows="9" style="width:100%;font-size:15px;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--ground);color:var(--ink);font-family:inherit;line-height:1.5"></textarea>
@@ -230,10 +308,9 @@
   <p class="seclabel" style="margin-top:14px"><span>Riders &amp; prices</span></p>
   <div id="slist"></div>
   <button class="addr" id="sAdd">+ Add a rider</button>
-  <div class="fieldrow" style="margin-top:14px">
-    <div class="field"><label>Board horse (optional)</label><input id="sBoardName" placeholder="Horse's name"></div>
-    <div class="field" style="flex:0 0 110px"><label>$/month</label><input id="sBoardRate" type="number" inputmode="decimal" min="0" step="1"></div>
-  </div>
+  <p class="seclabel" style="margin-top:14px"><span>Board horses &amp; $/month (optional)</span></p>
+  <div id="blist"></div>
+  <button class="addr" id="bAdd" style="margin-bottom:14px">+ Add a board horse</button>
   <div class="field"><label>They already owed me ($, optional)</label><input id="sStart" type="number" inputmode="decimal" step="1"></div>
   <div class="field"><label>Their Venmo (for one-tap requests)</label><input id="sVenmo" autocapitalize="none" placeholder="Their-Venmo-Name"></div>
   <div class="field"><label>Their phone (texts go straight to them)</label><input id="sPhone" type="tel" autocapitalize="none" placeholder="845-555-0123"></div>
@@ -270,7 +347,7 @@
   try{ localStorage.setItem(KEY+".t","1"); localStorage.removeItem(KEY+".t"); }
   catch(e){ document.getElementById("memnote").style.display="block"; }
 
-  function blank(){ return {v:14, zelle:"", lastBackup:0, clients:[]}; }
+  function blank(){ return {v:16, zelle:"", lastBackup:0, clients:[], farrier:{nextVisit:null, recs:[]}}; }
   var S=null;
   try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.clients) S=j; }catch(e){}
 
@@ -283,6 +360,7 @@
         var fam={id:"ahles", name:"Ahles Family",
           venmo:old.venmo||"", email:old.email||"", phone:old.phone||"",
           riders:old.riders, entries:old.entries||[], lastReport:old.lastReport||0,
+          boards: old.board ? [{name:"Giorgio", rate:old.board}] : [],
           board: old.board ? {name:"Giorgio", rate:old.board} : null};
         S.clients.push(fam);
         S.zelle = old.zelle||"";
@@ -293,7 +371,24 @@
   if(!("zelle" in S)) S.zelle="";
   if(!("lastBackup" in S)) S.lastBackup=0;
 
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  // v15 migration: the single board horse becomes a LIST of board horses.
+  // Additive: nothing is dropped, and save() keeps the old `board` field
+  // mirrored to boards[0] so an old backup or an old page version still
+  // reads this data correctly.
+  S.clients.forEach(function(c){
+    if(!c.boards) c.boards = c.board ? [c.board] : [];
+  });
+
+  // v16 migration: the farrier book. Purely additive — an empty shell
+  // until Morgan uses it; nothing existing is touched.
+  if(!S.farrier) S.farrier = {nextVisit:null, recs:[]};
+  if(!("nextVisit" in S.farrier)) S.farrier.nextVisit = null;
+  if(!S.farrier.recs) S.farrier.recs = [];
+
+  function save(){
+    S.clients.forEach(function(c){ if(c.boards) c.board = c.boards[0] || null; });
+    try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  }
   function money(n){ return "$"+(Math.round(n*100)/100).toLocaleString(undefined,{maximumFractionDigits:2}); }
   function today(){ return new Date().toISOString().slice(0,10); }
   function fmtDate(iso){ var d=new Date(iso+"T12:00:00");
@@ -302,6 +397,7 @@
   function balOf(c){ var b=0; c.entries.forEach(function(e){ b += (e.kind==="payment"?-e.amount:e.amount); }); return b; }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch];}); }
   var cur=null;
+  var mode="roster";   // "roster" | "client" | "farrier"
   var histFilter="all";
   function C(){ return S.clients.find(function(c){return c.id===cur;}); }
   document.querySelectorAll(".hchip").forEach(function(ch){
@@ -326,12 +422,22 @@
   };
 
   // ---------- render ----------
-  function render(){ if(cur===null) renderRoster(); else renderClient(); }
+  function render(){
+    if(mode==="farrier") renderFarrier();
+    else if(cur!==null) renderClient();
+    else renderRoster();
+  }
   function renderRoster(){
     document.getElementById("vRoster").style.display="block";
     document.getElementById("vClient").style.display="none";
+    document.getElementById("vFarrier").style.display="none";
     document.getElementById("sendbtn").style.display="none";
-    var tot=0; S.clients.forEach(function(c){ tot+=Math.max(0,balOf(c)); });
+    var due=0; horsesAll().forEach(function(h){ var d=dueInfo(h.rec); if(d.cls==="now") due++; });
+    var nv=S.farrier.nextVisit;
+    document.getElementById("farSub").textContent =
+      (nv && nv.date ? "next visit "+fmtDate(nv.date) : "no visit booked") +
+      (due ? " · "+due+" horse"+(due===1?"":"s")+" due" : "");
+    var tot=0; S.clients.forEach(function(c){ if(!c.own) tot+=Math.max(0,balOf(c)); });
     document.getElementById("total").textContent=money(tot);
     var L=document.getElementById("famlist"); L.innerHTML="";
     if(!S.clients.length){
@@ -341,9 +447,22 @@
       var b=balOf(c);
       var btn=document.createElement("button");
       btn.className="fam"; btn.type="button";
+      if(c.own){
+        var spent=c.entries.filter(function(e){return e.kind!=="payment";})
+          .reduce(function(s,e){return s+e.amount;},0);
+        btn.innerHTML="<span><b>"+esc(c.name)+"</b><div class='sub'>your own horses &mdash; expense log"+
+          (c.boards && c.boards.length ? " &middot; "+
+            c.boards.map(function(b){return esc(b.name);}).join(", ") : "")+"</div></span>"+
+          "<span class='amt zero'>"+money(spent)+" spent</span>"+
+          "<span class='chev'>&#8250;</span>";
+        btn.onclick=function(){ cur=c.id; histFilter="all"; render(); window.scrollTo(0,0); };
+        L.appendChild(btn);
+        return;
+      }
       btn.innerHTML="<span><b>"+esc(c.name)+"</b><div class='sub'>"+
         c.riders.map(function(r){return esc(r.name);}).join(", ")+
-        (c.board ? " &middot; board: "+esc(c.board.name) : "")+"</div></span>"+
+        (c.boards && c.boards.length ? " &middot; board: "+
+          c.boards.map(function(b){return esc(b.name);}).join(", ") : "")+"</div></span>"+
         "<span class='amt"+(b>0.001?"":" zero")+"'>"+(b>0.001?money(b):"settled")+"</span>"+
         "<span class='chev'>&#8250;</span>";
       btn.onclick=function(){ cur=c.id; histFilter="all"; render(); window.scrollTo(0,0); };
@@ -354,19 +473,28 @@
     var c=C(); if(!c){ cur=null; renderRoster(); return; }
     document.getElementById("vRoster").style.display="none";
     document.getElementById("vClient").style.display="block";
+    document.getElementById("vFarrier").style.display="none";
     document.getElementById("sendbtn").style.display="block";
     document.getElementById("famName").textContent=c.name;
+    var own=!!c.own;
+    document.getElementById("balLbl").textContent = own ? "Spent on your own horses" : "This family owes you";
+    document.getElementById("tapLbl").textContent = own ? "Log a cost" : "Tap when a lesson happens";
+    document.getElementById("paybtn").style.display = own ? "none" : "";
+    if(own) document.getElementById("sendbtn").style.display="none";
     var b=balOf(c);
     document.getElementById("balance").textContent=money(b);
-    document.getElementById("balance").style.color = b>0.001 ? "var(--hunter)" : "var(--muted)";
+    document.getElementById("balance").style.color = own ? "var(--saddle)" :
+      (b>0.001 ? "var(--hunter)" : "var(--muted)");
     var lessons=c.entries.filter(function(e){return e.kind==="lesson";}).length;
-    document.getElementById("balhint").textContent = b<=0.001 ? "All settled up" :
-      lessons+" lesson"+(lessons===1?"":"s")+" in the book";
+    document.getElementById("balhint").textContent = own ?
+      "your expense log — nothing owed to anyone" :
+      (b<=0.001 ? "All settled up" :
+        lessons+" lesson"+(lessons===1?"":"s")+" in the book");
     var vq=document.getElementById("venmoReq");
-    if(b>0.001 && c.venmo){ vq.style.display="block"; vq.textContent="Request "+money(b)+" on Venmo"; }
+    if(!own && b>0.001 && c.venmo){ vq.style.display="block"; vq.textContent="Request "+money(b)+" on Venmo"; }
     else vq.style.display="none";
     var zq=document.getElementById("zelleBtn");
-    if(b>0.001 && S.zelle){ zq.style.display="block"; zq.textContent="Text a Zelle request for "+money(b); }
+    if(!own && b>0.001 && S.zelle){ zq.style.display="block"; zq.textContent="Text a Zelle request for "+money(b); }
     else zq.style.display="none";
     var R=document.getElementById("riders"); R.innerHTML="";
     c.riders.forEach(function(r){
@@ -376,12 +504,33 @@
       btn.onclick=function(){ addEntry("lesson","Lesson — "+r.name, r.price); };
       R.appendChild(btn);
     });
-    var bb=document.getElementById("boardbtn");
-    if(c.board){
-      bb.style.display="flex";
-      document.getElementById("boardlbl").innerHTML="+ Board &middot; "+esc(c.board.name);
-      document.getElementById("boardrate").textContent = c.board.rate ? money(c.board.rate)+"/mo" : "set rate";
-    } else bb.style.display="none";
+    var B=document.getElementById("boards"); B.innerHTML="";
+    // own book: no board billing (she doesn't board with herself) —
+    // only the hoof-status rows below
+    (own ? [] : (c.boards||[])).forEach(function(b,i){
+      var btn=document.createElement("button");
+      btn.className="bbtn"; btn.type="button";
+      btn.innerHTML="<span>+ Board &middot; "+esc(b.name)+"</span><small>"+
+        (b.rate ? money(b.rate)+"/mo" : "set rate")+"</small>";
+      btn.onclick=function(){ openBoard(i); };
+      B.appendChild(btn);
+    });
+    // farrier component of the family page: hoof status per board horse,
+    // with the same "shod today" action the Farrier Book uses
+    (c.boards||[]).forEach(function(b){
+      var rec=farRec(c.id, b.name);
+      var d=dueInfo(rec);
+      var row=document.createElement("div"); row.className="famfar";
+      row.innerHTML='<span style="font-size:17px">&#128736;&#65039;</span>'+
+        '<span class="nm">'+esc(b.name)+'</span>'+
+        '<span class="when">'+(rec.lastDone ? "shod "+fmtDate(rec.lastDone) : "no hoof record yet")+
+        (d.txt ? " · "+d.txt : "")+'</span>';
+      var mini=document.createElement("button"); mini.className="mini"; mini.type="button";
+      mini.textContent="✓ Shod today";
+      mini.onclick=function(){ openShod(c.id, b.name); };
+      row.appendChild(mini);
+      B.appendChild(row);
+    });
     document.querySelectorAll(".hchip").forEach(function(ch){
       ch.className = "obtn hchip" + (ch.dataset.f===histFilter ? " on" : "");
     });
@@ -454,22 +603,215 @@
     dPay.close(); addEntry("payment","Payment received",a);
   };
 
-  // ---------- board ----------
+  // ---------- board (one button per horse; each remembers its own rate) ----------
   var dBoard=document.getElementById("dBoard");
-  document.getElementById("boardbtn").onclick=function(){
-    var c=C(); if(!c || !c.board) return;
-    document.getElementById("bTitle").textContent=c.board.name+"'s board — "+monthName();
-    document.getElementById("bAmt").value = c.board.rate ? String(c.board.rate) : "";
+  var boardIdx=-1;
+  function openBoard(i){
+    var c=C(); if(!c || !c.boards || !c.boards[i]) return;
+    boardIdx=i;
+    document.getElementById("bTitle").textContent=c.boards[i].name+"'s board — "+monthName();
+    document.getElementById("bAmt").value = c.boards[i].rate ? String(c.boards[i].rate) : "";
     dBoard.showModal();
-  };
+  }
   document.getElementById("bCancel").onclick=function(){ dBoard.close(); };
   document.getElementById("bGo").onclick=function(){
-    var c=C(); if(!c || !c.board) return;
+    var c=C(); if(!c || !c.boards || !c.boards[boardIdx]) return;
     var a=parseFloat(document.getElementById("bAmt").value);
     if(!(a>0)){ document.getElementById("bAmt").focus(); return; }
-    c.board.rate=a;
+    c.boards[boardIdx].rate=a;
     dBoard.close();
-    addEntry("charge","Board — "+c.board.name+" ("+monthName()+")",a);
+    addEntry("charge","Board — "+c.boards[boardIdx].name+" ("+monthName()+")",a);
+  };
+
+  // ---------- the farrier book ----------
+  // A horse's farrier record is keyed by (family id, horse name); board
+  // horses appear automatically, famId=null rows are Morgan's own adds.
+  function farRec(famId, name){
+    var k=String(name).trim().toLowerCase();
+    var r=S.farrier.recs.find(function(x){
+      return x.famId===famId && String(x.name).trim().toLowerCase()===k; });
+    if(!r){ r={famId:famId, name:String(name).trim(), cycle:6, lastDone:null, fee:0};
+      S.farrier.recs.push(r); }
+    return r;
+  }
+  function horsesAll(){
+    var out=[];
+    S.clients.forEach(function(c){
+      (c.boards||[]).forEach(function(b){
+        out.push({famId:c.id, famName:c.name, name:b.name, rec:farRec(c.id,b.name)});
+      });
+    });
+    S.farrier.recs.forEach(function(r){
+      if(r.famId===null) out.push({famId:null, famName:null, name:r.name, rec:r});
+    });
+    return out;
+  }
+  function dueInfo(rec){
+    if(!rec.lastDone) return {txt:"", cls:""};
+    var due=new Date(rec.lastDone+"T12:00:00"); due.setDate(due.getDate()+rec.cycle*7);
+    var days=Math.round((due - new Date(today()+"T12:00:00"))/86400000);
+    if(days<0)  return {txt:"overdue "+(-days)+"d", cls:"now"};
+    if(days===0)return {txt:"due today", cls:"now"};
+    if(days<=7) return {txt:"due in "+days+"d", cls:"soon"};
+    return {txt:"due "+fmtDate(due.toISOString().slice(0,10)), cls:""};
+  }
+  function renderFarrier(){
+    document.getElementById("vRoster").style.display="none";
+    document.getElementById("vClient").style.display="none";
+    document.getElementById("vFarrier").style.display="block";
+    document.getElementById("sendbtn").style.display="none";
+    var nv=S.farrier.nextVisit;
+    document.getElementById("visitWhen").textContent =
+      nv && nv.date ? "Farrier comes "+fmtDate(nv.date) : "No visit booked";
+    document.getElementById("visitNote").textContent =
+      nv && nv.note ? nv.note : "Tap to set the next farrier visit";
+    var L=document.getElementById("horselist"); L.innerHTML="";
+    var all=horsesAll();
+    if(!all.length){
+      L.innerHTML='<div class="empty">No horses yet. Board horses from the family '+
+        'settings show up here on their own, or add one below.</div>';
+      return;
+    }
+    all.forEach(function(h){
+      var d=dueInfo(h.rec);
+      var row=document.createElement("div"); row.className="frow";
+      row.innerHTML='<div class="top"><b>'+esc(h.name)+'</b>'+
+        (h.famName ? '<span class="famchip">'+esc(h.famName)+'</span>'
+                   : '<span class="famchip">no family</span>')+
+        (d.txt ? '<span class="duepill '+d.cls+'">'+esc(d.txt)+'</span>' : '')+'</div>'+
+        '<div class="meta">'+(h.rec.lastDone ? "last shod "+fmtDate(h.rec.lastDone) : "no record yet")+
+        ' &middot; every '+h.rec.cycle+' wks'+
+        (h.rec.fee ? ' &middot; usually '+money(h.rec.fee) : '')+'</div>';
+      var acts=document.createElement("div"); acts.className="actions";
+      var shod=document.createElement("button"); shod.className="shodbtn"; shod.type="button";
+      shod.textContent="✓ Shod today"+(h.rec.fee ? " — "+money(h.rec.fee) : "");
+      shod.onclick=function(){ openShod(h.famId, h.name); };
+      var cfg=document.createElement("button"); cfg.className="cfgbtn"; cfg.type="button";
+      cfg.textContent="⚙️";
+      cfg.setAttribute("aria-label","Hoof care settings for "+h.name);
+      cfg.onclick=function(){ openHorseCfg(h.famId, h.name); };
+      acts.appendChild(shod); acts.appendChild(cfg);
+      row.appendChild(acts);
+      L.appendChild(row);
+    });
+  }
+  document.getElementById("goFarrier").onclick=function(){ mode="farrier"; render(); window.scrollTo(0,0); };
+  document.getElementById("farBack").onclick=function(){ mode="roster"; render(); };
+
+  // shod today: logs the hoof record AND bills the owning family's book
+  var dShod=document.getElementById("dShod");
+  var shodT=null;   // {famId, name}
+  function openShod(famId, name){
+    shodT={famId:famId, name:name};
+    var rec=farRec(famId, name);
+    document.getElementById("shTitle").textContent=name+" — shod today";
+    document.getElementById("shAmt").value = rec.fee ? String(rec.fee) : "";
+    var fam = famId ? S.clients.find(function(c){return c.id===famId;}) : null;
+    document.getElementById("shHint").textContent = !fam ?
+      "No family attached — this just logs the hoof record." :
+      fam.own ? "Goes into your own expense book — your horse, your cost." :
+      "This bills the "+fam.name+"'s book (you paid the farrier — they owe you back).";
+    dShod.showModal();
+  }
+  document.getElementById("shCancel").onclick=function(){ dShod.close(); };
+  document.getElementById("shGo").onclick=function(){
+    if(!shodT) return;
+    var rec=farRec(shodT.famId, shodT.name);
+    var a=parseFloat(document.getElementById("shAmt").value);
+    var fam = shodT.famId ? S.clients.find(function(c){return c.id===shodT.famId;}) : null;
+    if(fam && !(a>0)){ document.getElementById("shAmt").focus(); return; }
+    var prevDone=rec.lastDone, prevFee=rec.fee;
+    rec.lastDone=today(); if(a>0) rec.fee=a;
+    dShod.close();
+    if(fam && a>0){
+      var e={id:Date.now()+"-"+Math.random().toString(36).slice(2,6), date:today(),
+             kind:"charge", label:"Farrier — "+shodT.name, amount:a};
+      fam.entries.push(e); save(); render();
+      toast((fam.own ? "Shod + logged expense: " : "Shod + billed "+fam.name+": ")+
+            shodT.name+" — "+money(a),
+        function(){ fam.entries=fam.entries.filter(function(x){return x.id!==e.id;});
+                    rec.lastDone=prevDone; rec.fee=prevFee; });
+    } else {
+      save(); render();
+      toast("Logged: "+shodT.name+" shod today",
+        function(){ rec.lastDone=prevDone; rec.fee=prevFee; });
+    }
+  };
+
+  // per-horse hoof settings
+  var dHorse=document.getElementById("dHorse");
+  var cfgT=null;
+  function openHorseCfg(famId, name){
+    cfgT={famId:famId, name:name};
+    var rec=farRec(famId, name);
+    document.getElementById("hTitle").textContent=name+" — hoof care";
+    document.getElementById("hCycle").value=rec.cycle;
+    document.getElementById("hFee").value=rec.fee||"";
+    document.getElementById("hLast").value=rec.lastDone||"";
+    document.getElementById("hDelRow").style.display = famId===null ? "flex" : "none";
+    dHorse.showModal();
+  }
+  document.getElementById("hCancel").onclick=function(){ dHorse.close(); };
+  document.getElementById("hGo").onclick=function(){
+    if(!cfgT) return;
+    var rec=farRec(cfgT.famId, cfgT.name);
+    var cy=parseInt(document.getElementById("hCycle").value,10);
+    if(cy>0) rec.cycle=cy;
+    var fe=parseFloat(document.getElementById("hFee").value);
+    rec.fee = fe>0 ? fe : 0;
+    rec.lastDone = document.getElementById("hLast").value || null;
+    save(); render(); dHorse.close();
+  };
+  document.getElementById("hDel").onclick=function(){
+    if(!cfgT || cfgT.famId!==null) return;
+    var k=String(cfgT.name).trim().toLowerCase();
+    var idx=S.farrier.recs.findIndex(function(x){
+      return x.famId===null && String(x.name).trim().toLowerCase()===k; });
+    if(idx<0) return;
+    var removed=S.farrier.recs.splice(idx,1)[0];
+    save(); render(); dHorse.close();
+    toast("Removed "+removed.name+" from the farrier book",
+      function(){ S.farrier.recs.push(removed); });
+  };
+  // your own horses live in a special "My Horses" book: an expense log,
+  // excluded from the owed-total, with the billing buttons hidden
+  function ensureOwn(){
+    var o=S.clients.find(function(c){return c.own;});
+    if(!o){
+      o={id:"own", name:"My Horses", own:true, venmo:"", phone:"", email:"",
+         riders:[], boards:[], board:null, entries:[], lastReport:0};
+      S.clients.push(o);
+    }
+    return o;
+  }
+  document.getElementById("addHorse").onclick=function(){
+    var name=prompt("Horse's name?");
+    if(!name || !name.trim()) return;
+    name=name.trim();
+    var o=ensureOwn();
+    var k=name.toLowerCase();
+    if(!o.boards.some(function(b){return b.name.trim().toLowerCase()===k;}))
+      o.boards.push({name:name, rate:0});
+    save(); render();
+    openHorseCfg(o.id, name);
+  };
+
+  // next-visit card
+  var dVisit=document.getElementById("dVisit");
+  document.getElementById("visitCard").onclick=function(){
+    var nv=S.farrier.nextVisit||{};
+    document.getElementById("vDate").value=nv.date||"";
+    document.getElementById("vNote").value=nv.note||"";
+    dVisit.showModal();
+  };
+  document.getElementById("vCancel").onclick=function(){ dVisit.close(); };
+  document.getElementById("vClear").onclick=function(){
+    S.farrier.nextVisit=null; save(); render(); dVisit.close();
+  };
+  document.getElementById("vGo").onclick=function(){
+    var d=document.getElementById("vDate").value;
+    S.farrier.nextVisit = d ? {date:d, note:document.getElementById("vNote").value.trim()} : null;
+    save(); render(); dVisit.close();
   };
 
   // ---------- venmo / zelle ----------
@@ -586,16 +928,22 @@
     d.querySelector("button").onclick=function(){ d.remove(); };
     L.appendChild(d);
   }
+  function brow(L,name,rate){
+    var d=document.createElement("div"); d.className="srow";
+    d.innerHTML='<input value="'+esc(name)+'" placeholder="Horse&#39;s name"><input class="pr" type="number" inputmode="decimal" min="0" step="1" placeholder="$/mo" value="'+(rate||"")+'"><button aria-label="Remove board horse">&#10005;</button>';
+    d.querySelector("button").onclick=function(){ d.remove(); };
+    L.appendChild(d);
+  }
   function openFam(id){
     famEditing=id;
     var isNew = id==="NEW";
-    var c = isNew ? {name:"",riders:[{name:"",price:70}],venmo:"",email:"",phone:"",board:null} : C();
+    var c = isNew ? {name:"",riders:[{name:"",price:70}],venmo:"",email:"",phone:"",boards:[]} : C();
     document.getElementById("dFamTitle").textContent = isNew ? "New family" : "Family settings";
     document.getElementById("fName").value=c.name||"";
     var L=document.getElementById("slist"); L.innerHTML="";
     c.riders.forEach(function(r){ srow(L,r.name,r.price); });
-    document.getElementById("sBoardName").value = c.board ? c.board.name : "";
-    document.getElementById("sBoardRate").value = (c.board && c.board.rate) ? c.board.rate : "";
+    var BL=document.getElementById("blist"); BL.innerHTML="";
+    (c.boards || (c.board?[c.board]:[])).forEach(function(b){ brow(BL,b.name,b.rate); });
     document.getElementById("sStart").value="";
     document.getElementById("sVenmo").value=c.venmo||"";
     document.getElementById("sPhone").value=c.phone||"";
@@ -606,6 +954,7 @@
   document.getElementById("famGear").onclick=function(){ openFam(cur); };
   document.getElementById("addFam").onclick=function(){ openFam("NEW"); };
   document.getElementById("sAdd").onclick=function(){ srow(document.getElementById("slist"),"",70); };
+  document.getElementById("bAdd").onclick=function(){ brow(document.getElementById("blist"),"",""); };
   document.getElementById("sCancel").onclick=function(){ dFam.close(); };
   document.getElementById("sGo").onclick=function(){
     var name=document.getElementById("fName").value.trim();
@@ -615,21 +964,26 @@
       var n=d.querySelector("input").value.trim(), p=parseFloat(d.querySelector(".pr").value);
       if(n && p>0) riders.push({name:n, price:p});
     });
-    if(!riders.length){ return; }
-    var bn=document.getElementById("sBoardName").value.trim();
-    var br=parseFloat(document.getElementById("sBoardRate").value);
-    var board = bn ? {name:bn, rate:(br>0?br:0)} : null;
+    // the own "My Horses" book legitimately has no riders — every other
+    // family needs at least one
+    var ownEditing = famEditing!=="NEW" && C() && C().own;
+    if(!riders.length && !ownEditing){ return; }
+    var boards=[];
+    document.getElementById("blist").querySelectorAll(".srow").forEach(function(d){
+      var n=d.querySelector("input").value.trim(), rr=parseFloat(d.querySelector(".pr").value);
+      if(n) boards.push({name:n, rate:(rr>0?rr:0)});
+    });
     var venmo=document.getElementById("sVenmo").value.trim().replace(/^@/,"");
     var phone=document.getElementById("sPhone").value.trim();
     var email=document.getElementById("sEmail").value.trim();
     var st=parseFloat(document.getElementById("sStart").value);
     if(famEditing==="NEW"){
       var c={id:"c"+Date.now(), name:name, riders:riders, venmo:venmo, phone:phone, email:email,
-             board:board, entries:[], lastReport:0};
+             boards:boards, board:boards[0]||null, entries:[], lastReport:0};
       if(st>0) c.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
       S.clients.push(c); cur=c.id;
     } else {
-      var c2=C(); c2.name=name; c2.riders=riders; c2.venmo=venmo; c2.phone=phone; c2.email=email; c2.board=board;
+      var c2=C(); c2.name=name; c2.riders=riders; c2.venmo=venmo; c2.phone=phone; c2.email=email; c2.boards=boards;
       if(st>0) c2.entries.push({id:Date.now()+"-s", date:today(), kind:"charge", label:"Balance carried over", amount:st});
     }
     save(); render(); dFam.close();
