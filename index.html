@@ -8,6 +8,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <meta name="apple-mobile-web-app-title" content="Lesson Book">
 <meta name="theme-color" content="#1F5138">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;600;700&display=swap">
 <style>
   :root{
@@ -166,6 +167,14 @@
 
   <div class="memnote" id="memnote">Heads up: this browser is blocking saving, so entries won't survive closing this page. Open the link in Safari or Chrome instead.</div>
 
+  <!-- backup nudge: shows when the book has real entries and no backup
+       in 10+ days. One tap shares the backup (text it to yourself). -->
+  <div class="memnote" id="bkNudge" style="cursor:pointer">
+    &#128203; <b>Protect the book</b> &mdash; it&rsquo;s been a while since a backup.
+    Tap here, then text it to yourself (30 seconds).
+    <span id="bkNudgeWhen"></span>
+  </div>
+
   <!-- ROSTER VIEW -->
   <div id="vRoster">
     <header>
@@ -183,7 +192,7 @@
     <p class="seclabel"><span>Your families</span></p>
     <div id="famlist"></div>
     <button class="addfam" id="addFam">+ Add a family</button>
-    <p class="foot">THE LESSON BOOK &middot; v16</p>
+    <p class="foot">THE LESSON BOOK &middot; v17</p>
   </div>
 
   <!-- FARRIER VIEW -->
@@ -330,6 +339,12 @@
   <h2>Book settings</h2>
   <div class="field"><label>Your Zelle (phone or email families pay)</label><input id="gZelle" autocapitalize="none" placeholder="phone or email"></div>
   <div class="dbtns" style="margin-top:6px"><button class="go" id="gSave">Save</button></div>
+  <p class="seclabel" style="margin-top:18px"><span>Storage protection</span></p>
+  <p class="hintline" id="storageStatus" style="margin:0 0 6px">Checking&hellip;</p>
+  <p class="hintline" style="margin:0 0 12px">iPhones can quietly erase a website&rsquo;s
+    saved data after ~7 days without a visit. Two habits make the book safe: open it
+    at least once a week, and when the amber backup banner appears, tap it and text
+    the backup to yourself. Restoring from a backup takes one paste.</p>
   <p class="seclabel" style="margin-top:18px"><span>Backups</span></p>
   <div class="dbtns" style="margin-top:0"><button class="go" id="bkExport">Copy a backup of everything</button></div>
   <p class="hintline" id="bkWhen"></p>
@@ -347,7 +362,7 @@
   try{ localStorage.setItem(KEY+".t","1"); localStorage.removeItem(KEY+".t"); }
   catch(e){ document.getElementById("memnote").style.display="block"; }
 
-  function blank(){ return {v:16, zelle:"", lastBackup:0, clients:[], farrier:{nextVisit:null, recs:[]}}; }
+  function blank(){ return {v:17, zelle:"", lastBackup:0, clients:[], farrier:{nextVisit:null, recs:[]}}; }
   var S=null;
   try{ var j=JSON.parse(localStorage.getItem(KEY)); if(j&&j.clients) S=j; }catch(e){}
 
@@ -384,6 +399,35 @@
   if(!S.farrier) S.farrier = {nextVisit:null, recs:[]};
   if(!("nextVisit" in S.farrier)) S.farrier.nextVisit = null;
   if(!S.farrier.recs) S.farrier.recs = [];
+
+  // v17 hardening: Safari erases a site's storage after ~7 quiet days
+  // (Morgan lost her book to this). Three layers: ask the browser for
+  // protected storage, nudge for a backup when one is overdue, and a
+  // service worker so the page itself opens offline at the barn.
+  var STORAGE_SAFE=null;
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      navigator.storage.persisted().then(function(p){
+        if(p){ STORAGE_SAFE=true; paintStorageStatus(); return null; }
+        return navigator.storage.persist();
+      }).then(function(granted){
+        if(granted!==null && granted!==undefined){ STORAGE_SAFE=!!granted; paintStorageStatus(); }
+      }).catch(function(){ STORAGE_SAFE=false; paintStorageStatus(); });
+    } else { STORAGE_SAFE=false; }
+  }catch(e){ STORAGE_SAFE=false; }
+  function paintStorageStatus(){
+    var el=document.getElementById("storageStatus");
+    if(!el) return;
+    el.innerHTML = STORAGE_SAFE===true ?
+      "&#9989; This browser agreed to protect the book's storage from automatic cleanup." :
+      STORAGE_SAFE===false ?
+      "&#9888;&#65039; This browser did not promise protected storage &mdash; the weekly-open and backup habits below matter." :
+      "Checking&hellip;";
+  }
+  try{
+    if("serviceWorker" in navigator && location.protocol==="https:")
+      navigator.serviceWorker.register("sw.js");
+  }catch(e){}
 
   function save(){
     S.clients.forEach(function(c){ if(c.boards) c.board = c.boards[0] || null; });
@@ -437,6 +481,13 @@
     document.getElementById("farSub").textContent =
       (nv && nv.date ? "next visit "+fmtDate(nv.date) : "no visit booked") +
       (due ? " · "+due+" horse"+(due===1?"":"s")+" due" : "");
+    // backup nudge: real entries + 10 days since the last backup
+    var hasData=S.clients.some(function(c){return c.entries.length;});
+    var overdue=(Date.now()-(S.lastBackup||0)) > 10*86400000;
+    document.getElementById("bkNudge").style.display = (hasData && overdue) ? "block" : "none";
+    document.getElementById("bkNudgeWhen").textContent = S.lastBackup ?
+      "(last backup "+fmtDate(new Date(S.lastBackup).toISOString().slice(0,10))+")" :
+      "(no backup yet)";
     var tot=0; S.clients.forEach(function(c){ if(!c.own) tot+=Math.max(0,balOf(c)); });
     document.getElementById("total").textContent=money(tot);
     var L=document.getElementById("famlist"); L.innerHTML="";
@@ -1014,6 +1065,7 @@
   // ---------- book settings: zelle + backup / restore ----------
   var dBook=document.getElementById("dBook");
   document.getElementById("bookGear").onclick=function(){
+    paintStorageStatus();
     document.getElementById("gZelle").value=S.zelle||"";
     document.getElementById("bkPaste").value="";
     document.getElementById("bkWhen").textContent = S.lastBackup ?
@@ -1026,13 +1078,28 @@
     save(); render(); toast("Saved");
   };
   document.getElementById("bkClose").onclick=function(){ dBook.close(); };
-  document.getElementById("bkExport").onclick=function(){
+  function backupBlob(){
     S.lastBackup=Date.now(); save();
-    var blob="LESSONBOOK-BACKUP:"+JSON.stringify(S);
+    return "LESSONBOOK-BACKUP:"+JSON.stringify(S);
+  }
+  function clipboardBackup(blob){
     if(navigator.clipboard){ navigator.clipboard.writeText(blob)
-      .then(function(){ toast("Backup copied — paste it into a note or email to yourself"); })
+      .then(function(){ toast("Backup copied — paste it into a note or a text to yourself"); render(); })
       .catch(function(){ showMsgDialog(blob); }); }
     else showMsgDialog(blob);
+  }
+  document.getElementById("bkExport").onclick=function(){ clipboardBackup(backupBlob()); };
+  // the nudge banner: share sheet first (two taps to text it to yourself),
+  // clipboard as the fallback
+  document.getElementById("bkNudge").onclick=function(){
+    var blob=backupBlob();
+    if(navigator.share){
+      navigator.share({text:blob}).then(function(){ toast("Backup sent — the book is safe"); render(); })
+        .catch(function(err){
+          if(err && err.name==="AbortError"){ render(); return; }
+          clipboardBackup(blob);
+        });
+    } else clipboardBackup(blob);
   };
   document.getElementById("bkRestore").onclick=function(){
     var t=document.getElementById("bkPaste").value.trim();
