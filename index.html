@@ -192,7 +192,7 @@
     <p class="seclabel"><span>Your families</span></p>
     <div id="famlist"></div>
     <button class="addfam" id="addFam">+ Add a family</button>
-    <p class="foot">THE LESSON BOOK &middot; v17</p>
+    <p class="foot">THE LESSON BOOK &middot; v17.1</p>
   </div>
 
   <!-- FARRIER VIEW -->
@@ -347,9 +347,11 @@
     the backup to yourself. Restoring from a backup takes one paste.</p>
   <p class="seclabel" style="margin-top:18px"><span>Backups</span></p>
   <div class="dbtns" style="margin-top:0"><button class="go" id="bkExport">Copy a backup of everything</button></div>
+  <div class="dbtns" style="margin-top:8px"><button id="bkFile">Save a backup file (goes to Files / iCloud)</button></div>
   <p class="hintline" id="bkWhen"></p>
   <div class="field" style="margin-top:12px"><label>Restore from a backup (paste here)</label><textarea id="bkPaste" rows="3" placeholder="Paste a backup&hellip;"></textarea></div>
-  <div class="dbtns"><button id="bkRestore">Restore</button><button id="bkClose">Close</button></div>
+  <div class="dbtns"><button id="bkRestore">Restore</button><button id="bkFromFile">Restore from a file&hellip;</button><button id="bkClose">Close</button></div>
+  <input type="file" id="bkPick" accept=".txt,text/plain,application/json" style="display:none">
 </dialog>
 
 <script>
@@ -383,22 +385,25 @@
     }catch(e){}
     try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
   }
-  if(!("zelle" in S)) S.zelle="";
-  if(!("lastBackup" in S)) S.lastBackup=0;
+  // ALL migrations live in migrate(), and it runs both at load and
+  // after any RESTORE — a pasted v14-era backup must come out as a
+  // valid current book, not a farrier-page crash.
+  function migrate(s){
+    if(!("zelle" in s)) s.zelle="";
+    if(!("lastBackup" in s)) s.lastBackup=0;
+    (s.clients||[]).forEach(function(c){
+      if(!c.boards) c.boards = c.board ? [c.board] : [];
+    });
+    if(!s.farrier) s.farrier = {nextVisit:null, recs:[]};
+    if(!("nextVisit" in s.farrier)) s.farrier.nextVisit = null;
+    if(!s.farrier.recs) s.farrier.recs = [];
+    return s;
+  }
+  migrate(S);
 
-  // v15 migration: the single board horse becomes a LIST of board horses.
-  // Additive: nothing is dropped, and save() keeps the old `board` field
-  // mirrored to boards[0] so an old backup or an old page version still
-  // reads this data correctly.
-  S.clients.forEach(function(c){
-    if(!c.boards) c.boards = c.board ? [c.board] : [];
-  });
-
-  // v16 migration: the farrier book. Purely additive — an empty shell
-  // until Morgan uses it; nothing existing is touched.
-  if(!S.farrier) S.farrier = {nextVisit:null, recs:[]};
-  if(!("nextVisit" in S.farrier)) S.farrier.nextVisit = null;
-  if(!S.farrier.recs) S.farrier.recs = [];
+  // (v15: boards list is additive — save() keeps the old `board` field
+  // mirrored to boards[0] for old-backup/old-page compatibility.
+  // v16: the farrier shell arrives empty; nothing existing is touched.)
 
   // v17 hardening: Safari erases a site's storage after ~7 quiet days
   // (Morgan lost her book to this). Three layers: ask the browser for
@@ -1101,8 +1106,7 @@
         });
     } else clipboardBackup(blob);
   };
-  document.getElementById("bkRestore").onclick=function(){
-    var t=document.getElementById("bkPaste").value.trim();
+  function restoreFromText(t){
     var i=t.indexOf("LESSONBOOK-BACKUP:");
     if(i<0){ toast("That doesn't look like a backup"); return; }
     try{
@@ -1110,12 +1114,38 @@
       if(j && j.clients){
         var before=JSON.parse(JSON.stringify(S));
         try{ localStorage.setItem(PREV, JSON.stringify(before)); }catch(e){}
-        S=j; cur=null; save(); render(); dBook.close();
+        S=migrate(j); cur=null; mode="roster"; save(); render(); dBook.close();
         toast("Book restored — Undo brings the old one back",
           function(){ S=before; cur=null; }, 30000);
       }
       else toast("That doesn't look like a backup");
     }catch(e){ toast("That doesn't look like a backup"); }
+  }
+  document.getElementById("bkRestore").onclick=function(){
+    restoreFromText(document.getElementById("bkPaste").value.trim());
+  };
+  // backup as a FILE: lands in the Files app (iCloud Drive) on iPhone —
+  // an off-device copy with no account and no backend
+  document.getElementById("bkFile").onclick=function(){
+    var blob=backupBlob();
+    var f=new Blob([blob],{type:"text/plain"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(f);
+    a.download="lesson-book-backup-"+today()+".txt";
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },2000);
+    toast("Backup file ready — choose Save to Files");
+    render();
+  };
+  document.getElementById("bkFromFile").onclick=function(){
+    document.getElementById("bkPick").click();
+  };
+  document.getElementById("bkPick").onchange=function(){
+    var inp=this, f=inp.files && inp.files[0];
+    if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){ restoreFromText(String(r.result||"").trim()); inp.value=""; };
+    r.readAsText(f);
   };
 
   render();
